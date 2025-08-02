@@ -9,8 +9,8 @@ static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will
 static const int smartgaps                 = 1;  /* 1 means no outer gap when there is only one window */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8; /* gap pixel between windows */
-static int enableautoswallow = 1; /* enables autoswallowing newly spawned clients */
-static float swallowborder = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
+static int enableautoswallow               = 1; /* enables autoswallowing newly spawned clients */
+static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
 static const float rootcolor[]             = COLOR(0x222222ff);
 static const float bordercolor[]           = COLOR(0x928374ff);
@@ -31,7 +31,7 @@ static const Rule rules[] = {
 	/* app_id                     title                    tags mask  isfloating  isterm   noswallow   monitor   scratchkey */
 	{ "Gimp_EXAMPLE",             NULL,                    0,         1,          0,       0,          -1,       0    },
 	{ "footclient",               NULL,                    0,         0,          1,       1,          -1,       0    },
-	{ "discord",                  NULL,               1 << 3,         0,          0,       0,           0,       0    },
+	{ "WebCord",                  NULL,               1 << 3,         0,          0,       0,           0,       0    },
 	{ "musicterm",                NULL,               1 << 1,         0,          1,       1,           0,       0    },
 	{ "org.keepassxc.KeePassXC",  NULL,               1 << 8,         0,          0,       0,           1,       0    },
 	{ "thunderbird",              NULL,               1 << 2,         0,          0,       0,           1,       0    },
@@ -67,6 +67,7 @@ static const MonitorRule monrules[] = {
 	/* defaults */
 	{ "DP-1",           0.50f, 1,      1.25 ,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,     -1 },
 	{ "HDMI-A-1",       0.50f, 1,          1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1920,  -1 },
+	{ "eDP-1",          0.50f, 1,      1.25 ,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,     -1 },
 };
 
 /* keyboard */
@@ -138,16 +139,16 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[]         = { TERMINAL, NULL };
-static const char *menucmd[]         = { "wmenu-run", NULL };
+static const char *menucmd[]         = { "rofi", "-show", "drun", NULL };
 static const char *browser[]         = { "librewolf", NULL };
 static const char *email[]           = { "thunderbird", NULL };
-static const char *music[]           = { TERMINAL,"-c","musicterm","-e","rmpc", NULL };
+static const char *music[]           = { TERMINAL,"--app-id","musicterm","-e","rmpc", NULL };
 static const char *notes[]           = { "obsidian", NULL};
 static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
-static const char *communicator[]    = { "env","ELECTRON_OZONE_PLATFORM_HINT=","discord", NULL };
+static const char *communicator[]    = { "webcord", NULL };
 static const char *lockscreen[]      = { "gtklock", NULL };
 
 
