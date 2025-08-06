@@ -21,7 +21,7 @@ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You ca
 
 /* tagging - TAGCOUNT must be no greater than 31 */
 #define TAGCOUNT (9)
-#define TERMINAL "footclient"
+#define TERMINAL "foot"
 
 /* logging */
 static int log_level = WLR_ERROR;
@@ -30,7 +30,7 @@ static int log_level = WLR_ERROR;
 static const Rule rules[] = {
 	/* app_id                     title                    tags mask  isfloating  isterm   noswallow   monitor   scratchkey */
 	{ "Gimp_EXAMPLE",             NULL,                    0,         1,          0,       0,          -1,       0    },
-	{ "footclient",               NULL,                    0,         0,          1,       1,          -1,       0    },
+	{ TERMINAL,                   NULL,                    0,         0,          1,       1,          -1,       0    },
 	{ "WebCord",                  NULL,               1 << 3,         0,          0,       0,           0,       0    },
 	{ "musicterm",                NULL,               1 << 1,         0,          1,       1,           0,       0    },
 	{ "org.keepassxc.KeePassXC",  NULL,               1 << 8,         0,          0,       0,           1,       0    },
