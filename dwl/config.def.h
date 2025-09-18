@@ -38,16 +38,16 @@ static int log_level = WLR_ERROR;
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
 	/* app_id                        title              tags mask     isfloating   isterm   noswallow   monitor      scratchkey */
-	{ "Gimp_EXAMPLE",                NULL,              0,            1,            0,          0,         -1,       0   }, /* Start on currently visible tags floating, not tiled */
-	{ "firefox_EXAMPLE",             NULL,              1 << 8,       0,            0,          0,         -1,       0   }, /* Start on ONLY tag "9" */
-    { "mpv",                         NULL,              0,            1,            0,          0,          0,       0   },
-    { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0   }, // workspace 9, monitor 1
-    { "thunderbird",                 NULL,              1 << 2,       0,            0,          0,          1,       0   }, // workspace 4, monitor 1
-    { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0   },
-    { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0   },
-    { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0   }, /* ghostscript */
-    { NULL,                          "Event Tester",    0,            0,            0,          1,         -1,       0   }, /* xev */
-    { "wev",                         NULL,    0,            0,            0,          1,         -1,       0   }, /* xev */
+	{ "Gimp_EXAMPLE",                NULL,              0,            1,            0,          0,         -1,       0    },
+	{ "firefox_EXAMPLE",             NULL,              1 << 8,       0,            0,          0,         -1,       0    },
+    { "mpv",                         NULL,              0,            1,            0,          0,          0,       0    },
+    { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
+    { "thunderbird",                 NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
+    { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
+    { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
+    { NULL,                          "Event Tester",    0,            0,            0,          1,         -1,       0    },
+    { "wev",                         NULL,              0,            0,            0,          1,         -1,       0    },
 	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
 	{ NULL,                          "pulsemixer",      0,            1,            1,          1,         -1,      's'   },
 	{ NULL,                          "spnotes",         0,            1,            1,          1,         -1,      'n'   },
@@ -73,15 +73,12 @@ static const Layout layouts[] = {
 */
 /* NOTE: ALWAYS add a fallback rule, even if you are completely sure it won't be used */
 static const MonitorRule monrules[] = {
-	/* name       mfact  nmaster scale layout       rotate/reflect                x    y */
-	/* example of a HiDPI laptop monitor:
-	{ "eDP-1",    0.5f,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	*/
+	/* name          mfact  nmaster scale       layout       rotate/reflect                 x    y */
 	/* defaults */
-	{ NULL,          0.5f,  1,      1,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "eDP-1",       0.5f,  1,      1.25,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "DP-1",        0.5f,  1,      1.25,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "HDMI-A-1",    0.5f,  1,      1,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+	{ NULL,          0.5f,  1,      1,          &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+	{ "eDP-1",       0.5f,  1,      1.25,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+	{ "DP-1",        0.5f,  1,      1.25,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+	{ "HDMI-A-1",    0.5f,  1,      1,          &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
 };
 
 /* keyboard */
@@ -103,7 +100,7 @@ static const int drag_lock = 1;
 static const int natural_scrolling = 0;
 static const int disable_while_typing = 1;
 static const int left_handed = 0;
-static const int middle_button_emulation = 0;
+static const int middle_button_emulation = 1;
 /* You can choose between:
 LIBINPUT_CONFIG_SCROLL_NO_SCROLL
 LIBINPUT_CONFIG_SCROLL_2FG
@@ -231,12 +228,12 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_c,          movecenter,     {0} },
 	// { MODKEY,                    XKB_KEY_a,          toggleswallow,  {0} },
 	// { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_A,          toggleautoswallow,{0} },
-    { 0,                        XKB_KEY_XF86AudioMute,          spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle") },
-	{ 0,                        XKB_KEY_XF86AudioLowerVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%-"   ) },
-	{ 0,                        XKB_KEY_XF86AudioRaiseVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+"   ) },
-    { 0,                        XKB_KEY_XF86AudioPlay,          spawn,   SHCMD("playerctl play-pause") },
-    { 0,                        XKB_KEY_XF86AudioNext,          spawn,   SHCMD("playerctl next") },
-    { 0,                        XKB_KEY_XF86AudioPrev,          spawn,   SHCMD("playerctl previous") },
+    { 0,                         XKB_KEY_XF86AudioMute,          spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle") },
+	{ 0,                         XKB_KEY_XF86AudioLowerVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%-"   ) },
+	{ 0,                         XKB_KEY_XF86AudioRaiseVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+"   ) },
+    { 0,                         XKB_KEY_XF86AudioPlay,          spawn,   SHCMD("playerctl play-pause") },
+    { 0,                         XKB_KEY_XF86AudioNext,          spawn,   SHCMD("playerctl next") },
+    { 0,                         XKB_KEY_XF86AudioPrev,          spawn,   SHCMD("playerctl previous") },
 	{ MODKEY,                    XKB_KEY_0,          view,           {.ui = ~0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright, tag,            {.ui = ~0} },
 	{ MODKEY,                    XKB_KEY_comma,      focusmon,       {.i = WLR_DIRECTION_LEFT} },
