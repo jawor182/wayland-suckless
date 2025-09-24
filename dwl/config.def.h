@@ -155,7 +155,6 @@ static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { "thunderbird", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
-static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "gtklock", NULL };
@@ -204,7 +203,6 @@ static const Key keys[] = {
     { MODKEY,                    XKB_KEY_e,          spawn,          {.v = email } },
     { MODKEY,                    XKB_KEY_n,          spawn,          {.v = notes } },
     { MODKEY,                    XKB_KEY_f,          spawn,          {.v = fileManager } },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_f,          spawn,          {.v = guiFileManager } },
     { MODKEY,                    XKB_KEY_p,          spawn,          {.v = passwords } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,          spawn,          {.v = books } },
     { MODKEY,                    XKB_KEY_Escape,     spawn,          {.v = lockscreen } },
@@ -221,6 +219,7 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,      spawn,          SHCMD("playerctl -p mpd previous") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,      spawn,          SHCMD("playerctl -p mpd volume 0.05+") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,      spawn,          SHCMD("playerctl -p mpd volume 0.05-") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,          spawn,          SHCMD("playerctl -p mpd pause && playerctl -p mpd position 0") },
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_v,          setlayout,      {.v = &layouts[1]} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
