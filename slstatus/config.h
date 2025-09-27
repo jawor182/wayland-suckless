@@ -24,10 +24,7 @@ static const char unknown_str[] = "n/a";
  * datetime            date and time                   format string (%F %T)
  * disk_free           free disk space in GB           mountpoint path (/)
  * disk_perc           disk usage in percent           mountpoint path (/)
- * disk_total          total disk space in GB          mountpoint path (/)
- * disk_used           used disk space in GB           mountpoint path (/)
- * entropy             available entropy               NULL
- * gid                 GID of current user             NULL
+ * disk_total          total disk space in GB          mountpoint path (/) disk_used           used disk space in GB           mountpoint path (/) entropy             available entropy               NULL gid                 GID of current user             NULL
  * hostname            hostname                        NULL
  * ipv4                IPv4 address                    interface name (eth0)
  * ipv6                IPv6 address                    interface name (eth0)
@@ -66,10 +63,10 @@ static const char unknown_str[] = "n/a";
  */
 static const struct arg args[] = {
     /* function            format          argument */
-    { run_command,         " %s ",         "$HOME/.scripts/statusbar/sb-mpd"        },
-    { run_command,         "%s ",          "$HOME/.scripts/statusbar/sb-date"       },
-    { run_command,         "%s ",          "$HOME/.scripts/statusbar/sb-volume"     },
-    { run_command,         "%s ",          "$HOME/.scripts/statusbar/sb-cpu"        },
-    { run_command,         "%s ",          "$HOME/.scripts/statusbar/sb-memory"     },
-    { run_command,         "%s",           "$HOME/.scripts/statusbar/sb-internet"   },
+    { run_command,         " %s ",         "$HOME/.local/bin/statusbar/sb-mpd"        },
+    { run_command,         "%s ",          "$HOME/.local/bin/statusbar/sb-date"       },
+    { run_command,         "%s ",          "$HOME/.local/bin/statusbar/sb-volume"     },
+    { run_command,         "%s ",          "$HOME/.local/bin/statusbar/sb-cpu"        },
+    { run_command,         "%s ",          "$HOME/.local/bin/statusbar/sb-memory"     },
+    { run_command,         "%s",           "$HOME/.local/bin/statusbar/sb-internet"   },
 };
