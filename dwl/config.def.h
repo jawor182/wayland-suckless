@@ -27,14 +27,14 @@ static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You ca
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "librewolf"
+#define BROWSER "brave"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
 	/* app_id                        title              tags mask     isfloating   isterm   noswallow   monitor      scratchkey */
 	{ "Gimp_EXAMPLE",                NULL,              0,            1,            0,          0,         -1,       0    },
 	{ "firefox_EXAMPLE",             NULL,              1 << 8,       0,            0,          0,         -1,       0    },
-    { "mpv",                         NULL,              0,            1,            0,          0,          0,       0    },
+    { "mpv",                         NULL,              0,            0,            0,          0,          0,       0    },
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
     { "thunderbird",                 NULL,              1 << 2,       0,            0,          0,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
@@ -144,14 +144,14 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[]         = { TERMINAL, NULL };
-static const char *menucmd[]         = { "fuzzel", NULL };
+static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { "thunderbird", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
-static const char *lockscreen[]      = { "gtklock", NULL };
+static const char *lockscreen[]      = { "hyprlock", NULL };
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
