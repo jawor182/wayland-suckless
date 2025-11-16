@@ -14,29 +14,35 @@ static const unsigned int gappx            = 8; /* gap pixel between windows */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
 static const int respect_monitor_reserved_area = 0;  /* 1 to monitor center while respecting the monitor's reserved area, 0 to monitor center */
 static const float rootcolor[]             = COLOR(0x282828ff);
-static const float bordercolor[]           = COLOR(0x928374ff);
-static const float focuscolor[]            = COLOR(0xd65d0eff);
-static const float urgentcolor[]           = COLOR(0xfb4934ff);
+static const int showbar                   = 1; /* 0 means no bar */
+static const int topbar                    = 1; /* 0 means bottom bar */
+static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","NotoColorEmoji:size=14"};
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
+static uint32_t colors[][3]                = {
+	/*               fg          bg          border    */
+  [SchemeNorm] = { 0xbbbbbbff, 0x282828ff, 0x928374ff },  // normal: fg, root/bg, border
+  [SchemeSel]  = { 0x282828ff, 0xd65d0eff, 0xd65d0eff },  // focused: focus color
+  [SchemeUrg]  = { 0xfb4934ff, 0x282828ff, 0xfb4934ff },  // urgent: urgent color
+};
 
-/* tagging - TAGCOUNT must be no greater than 31 */
-#define TAGCOUNT (9)
+/* tagging */
+static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 /* logging */
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "brave"
+#define BROWSER "librewolf"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
 	/* app_id                        title              tags mask     isfloating   isterm   noswallow   monitor      scratchkey */
-	{ "Gimp_EXAMPLE",                NULL,              0,            1,            0,          0,         -1,       0    },
-	{ "firefox_EXAMPLE",             NULL,              1 << 8,       0,            0,          0,         -1,       0    },
     { "mpv",                         NULL,              0,            0,            0,          0,          0,       0    },
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
-    { "thunderbird",                 NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
+    { "calibre",                     "calibre-gui",     1 << 3,       0,            0,          0,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
@@ -66,13 +72,13 @@ static const Layout layouts[] = {
  * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899
 */
 /* NOTE: ALWAYS add a fallback rule, even if you are completely sure it won't be used */
+
 static const MonitorRule monrules[] = {
-	/* name          mfact  nmaster scale       layout       rotate/reflect                 x    y */
-	/* defaults */
-	{ NULL,          0.5f,  1,      1,          &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "eDP-1",       0.5f,  1,      1.25,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "DP-1",        0.5f,  1,      1.25,       &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	{ "HDMI-A-1",    0.5f,  1,      1,          &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+    /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate */
+    { "eDP-1",     0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      0 },
+    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      2560,   1440,   165.001007 },
+    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, -1920,  0,      1920,   1080,   74.973000 },
+    { NULL,        0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      0 },
 };
 
 /* keyboard */
@@ -81,7 +87,7 @@ static const struct xkb_rule_names xkb_rules = {
 	/* example:
 	.options = "ctrl:nocaps",
 	*/
-	.options = NULL,
+    .layout = "pl"
 };
 
 static const int repeat_rate = 60;
@@ -151,7 +157,7 @@ static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","c
 static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
-static const char *lockscreen[]      = { "hyprlock", NULL };
+static const char *lockscreen[]      = { "gtklock", NULL };
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
@@ -159,7 +165,7 @@ static const char *spsound[]    = {"s", TERMINAL, "-T", "pulsemixer","-e","pulse
 static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 static const char *spfiles[]    = {"f", TERMINAL, "-T", "spfiles","-e","yazi", NULL};
 static const char *spsysmon[]   = {"M", TERMINAL, "-T", "spsysmon","-e","btop", NULL};
-static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","ncmpcpp", NULL};
+static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
 static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsboat", NULL};
 
 
@@ -174,8 +180,7 @@ static const Key keys[] = {
 	/* modifier                  key                 function        argument */
 	{ MODKEY,                    XKB_KEY_d,          spawn,          {.v = menucmd} },
 	{ MODKEY,                    XKB_KEY_Return,     spawn,          {.v = termcmd} },
-	{ MODKEY,                    XKB_KEY_b,          spawn,          SHCMD("killall -SIGUSR1 waybar") },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,          spawn,          SHCMD("killall -SIGUSR2 waybar") },
+	{ MODKEY,                    XKB_KEY_b,          togglebar,      {0} },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Return,     togglescratch,  {.v = spterm } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_s,          togglescratch,  {.v = spsound } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_n,          togglescratch,  {.v = spnotes } },
@@ -195,12 +200,13 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Tab,        view,           {0} },
 	{ MODKEY,                    XKB_KEY_q,          killclient,     {0} },
 	{ MODKEY,                    XKB_KEY_g,          togglegaps,     {0} },
+	{ MODKEY,                    XKB_KEY_s,          togglesticky,   {0} },
     { MODKEY,                    XKB_KEY_w,          spawn,          {.v = browser } },
     { MODKEY,                    XKB_KEY_e,          spawn,          {.v = email } },
     { MODKEY,                    XKB_KEY_n,          spawn,          {.v = notes } },
     { MODKEY,                    XKB_KEY_f,          spawn,          {.v = fileManager } },
     { MODKEY,                    XKB_KEY_p,          spawn,          {.v = passwords } },
-    { MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_b,          spawn,          {.v = books } },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,          spawn,          {.v = books } },
     { MODKEY,                    XKB_KEY_Escape,     spawn,          {.v = lockscreen } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Escape,     spawn,          SHCMD("powermenu")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,          spawn,          SHCMD("colorpicker")},
@@ -209,6 +215,10 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,          spawn,          SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_M,          spawn,          SHCMD("mpvq play") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_A,          spawn,          SHCMD("mpvq addclip") },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_asciitilde, spawn,          SHCMD("bemenubookmarks select_browser") },
+    { MODKEY,                    XKB_KEY_grave,      spawn,          SHCMD("bemenubookmarks select") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,          spawn,          SHCMD("bemenubookmarks add") },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_E,          spawn,          SHCMD("bemenuunicode") },
     { 0,                         XKB_KEY_Print,      spawn,          SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_space,      spawn,          SHCMD("playerctl -p mpd play-pause") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,     spawn,          SHCMD("playerctl -p mpd next") },
@@ -223,9 +233,9 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_c,          movecenter,     {0} },
 	// { MODKEY,                    XKB_KEY_a,          toggleswallow,  {0} },
 	// { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_A,          toggleautoswallow,{0} },
-    { 0,                         XKB_KEY_XF86AudioMute,          spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle") },
-	{ 0,                         XKB_KEY_XF86AudioLowerVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%-"   ) },
-	{ 0,                         XKB_KEY_XF86AudioRaiseVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+"   ) },
+    { 0,                         XKB_KEY_XF86AudioMute,          spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+9 someblocks") },
+	{ 0,                         XKB_KEY_XF86AudioLowerVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+9 someblocks"   ) },
+	{ 0,                         XKB_KEY_XF86AudioRaiseVolume,   spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+9 someblocks"   ) },
     { 0,                         XKB_KEY_XF86AudioPlay,          spawn,   SHCMD("playerctl play-pause") },
     { 0,                         XKB_KEY_XF86AudioNext,          spawn,   SHCMD("playerctl next") },
     { 0,                         XKB_KEY_XF86AudioPrev,          spawn,   SHCMD("playerctl previous") },
@@ -257,7 +267,15 @@ static const Key keys[] = {
 };
 
 static const Button buttons[] = {
-	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
-	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
+	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[2]} },
+	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
+	{ ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
+	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+	{ ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
+	{ ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
+	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
+	{ ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
 };
