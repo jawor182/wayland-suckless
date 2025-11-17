@@ -263,6 +263,8 @@ typedef struct {
 	int resx;
 	int resy;
 	float rate;
+  int mode;
+  int adaptive;
 } MonitorRule;
 
 typedef struct {
@@ -1341,6 +1343,18 @@ createmon(struct wl_listener *listener, void *data)
 			break;
 		}
 	}
+
+			wlr_output_state_set_adaptive_sync_enabled(&state, r->adaptive);
+
+			if(r->mode == -1)
+				wlr_output_state_set_custom_mode(&state, r->resx, r->resy,
+				(int) (r->rate > 0 ? r->rate * 1000 : 0));
+			else if (!wl_list_empty(&wlr_output->modes)) {
+				for (int j = 0; j < r->mode; j++) {
+					mode = wl_container_of(mode->link.next, mode, link);
+				}
+				wlr_output_state_set_mode(&state, mode);
+			}
 
 	/* Set up event listeners */
 	LISTEN(&wlr_output->events.frame, &m->frame, rendermon);
