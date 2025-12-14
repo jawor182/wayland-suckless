@@ -32,8 +32,8 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 /* logging */
 static int log_level = WLR_ERROR;
 
-#define TERMINAL "footclient"
-#define BROWSER "librewolf"
+#define TERMINAL "foot"
+#define BROWSER "brave"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
@@ -42,12 +42,14 @@ static const Rule rules[] = {
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
     { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
+    { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre",                     "calibre-gui",     1 << 3,       0,            0,          0,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
     { NULL,                          "Event Tester",    0,            0,            0,          1,         -1,       0    },
     { "wev",                         NULL,              0,            0,            0,          1,         -1,       0    },
+    { "xdg-desktop-portal",          NULL,              0,            1,            0,          0,         -1,       0    },
 	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
 	{ NULL,                          "pulsemixer",      0,            1,            1,          1,         -1,      's'   },
 	{ NULL,                          "spnotes",         0,            1,            1,          1,         -1,      'n'   },
@@ -76,8 +78,8 @@ static const Layout layouts[] = {
 static const MonitorRule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
     { "eDP-1",     0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
-    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      2560,   1440,   165.001007,      1,    0  },
-    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, -1920,  0,      1920,   1080,   74.973000,       1,    0  },
+    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      2560,   1440,   165.001,      1,    0  },
+    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, -1920,  0,      1920,   1080,   74.973,       1,    0  },
     { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, -1,     -1,     0,      0,      0.0f,            0,    1},
 };
 
@@ -158,6 +160,7 @@ static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
+static const char *communicator[]    = { "discord", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", NULL};
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
@@ -207,6 +210,7 @@ static const Key keys[] = {
     { MODKEY,                    XKB_KEY_f,          spawn,          {.v = fileManager } },
     { MODKEY,                    XKB_KEY_p,          spawn,          {.v = passwords } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,          spawn,          {.v = books } },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,          spawn,          {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,     spawn,          {.v = lockscreen } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Escape,     spawn,          SHCMD("powermenu")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,          spawn,          SHCMD("colorpicker")},
