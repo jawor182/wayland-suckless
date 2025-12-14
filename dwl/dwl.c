@@ -3935,20 +3935,15 @@ warpcursor(const Client *c) {
 	if (cursor_mode != CurNormal) {
 		return;
 	}
-	if (!c && selmon) {
-		wlr_cursor_warp_closest(cursor,
-			  NULL,
-			  selmon->w.x + selmon->w.width / 2.0 ,
-			  selmon->w.y + selmon->w.height / 2.0);
-	}
-	else if ( c && (cursor->x < c->geom.x ||
+	if ( c && (cursor->x < c->geom.x ||
 		cursor->x > c->geom.x + c->geom.width ||
 		cursor->y < c->geom.y ||
-		cursor->y > c->geom.y + c->geom.height))
+		cursor->y > c->geom.y + c->geom.height)){
 		wlr_cursor_warp_closest(cursor,
 			  NULL,
 			  c->geom.x + c->geom.width / 2.0,
 			  c->geom.y + c->geom.height / 2.0);
+  }
 }
 
 Monitor *
