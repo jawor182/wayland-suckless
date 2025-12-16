@@ -3,7 +3,6 @@
                         ((hex >> 16) & 0xFF) / 255.0f, \
                         ((hex >> 8) & 0xFF) / 255.0f, \
                         (hex & 0xFF) / 255.0f }
-static int passthrough                     = 0;
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static int enableautoswallow               = 1; /* enables autoswallowing newly spawned clients */
@@ -172,12 +171,6 @@ static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", N
 static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsboat", NULL};
 
 
-#define ADDPASSRULE(S, K) {.appid = S, .len = LENGTH(S), .key = K}
-static const PassKeypressRule pass_rules[] = {
-    ADDPASSRULE("WebCord", XKB_KEY_n),
-};
-
-
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
 	/* modifier                  key                 function        argument */
@@ -203,7 +196,6 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Tab,        view,           {0} },
 	{ MODKEY,                    XKB_KEY_q,          killclient,     {0} },
 	{ MODKEY,                    XKB_KEY_g,          togglegaps,     {0} },
-	{ MODKEY,                    XKB_KEY_s,          togglesticky,   {0} },
     { MODKEY,                    XKB_KEY_w,          spawn,          {.v = browser } },
     { MODKEY,                    XKB_KEY_e,          spawn,          {.v = email } },
     { MODKEY,                    XKB_KEY_n,          spawn,          {.v = notes } },
@@ -257,7 +249,6 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Q,          quit,           {0} },
-	{ MODKEY,                    XKB_KEY_F11,        togglepassthrough, {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
