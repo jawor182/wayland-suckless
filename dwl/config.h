@@ -43,7 +43,6 @@ static const Rule rules[] = {
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
-    { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
