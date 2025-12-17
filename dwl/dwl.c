@@ -115,6 +115,7 @@ struct Client {
 	unsigned int type; /* XDGShell or X11* */
 
 	Monitor *mon;
+	char *output;
 	struct wlr_scene_tree *scene;
 	struct wlr_scene_rect *border[4]; /* top, bottom, left, right */
 	struct wlr_scene_tree *scene_surface;
@@ -362,7 +363,6 @@ static void pointerfocus(Client *c, struct wlr_surface *surface,
 		double sx, double sy, uint32_t time);
 static void powermgrsetmode(struct wl_listener *listener, void *data);
 static void quit(const Arg *arg);
-static void relativeswap(const Arg *arg);
 static void rendermon(struct wl_listener *listener, void *data);
 static void requestdecorationmode(struct wl_listener *listener, void *data);
 static void requeststartdrag(struct wl_listener *listener, void *data);
@@ -385,7 +385,6 @@ static Client *termforwin(Client *c);
 static void spawnscratch(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void startdrag(struct wl_listener *listener, void *data);
-static void relativeswap(const Arg *arg);
 static int statusin(int fd, unsigned int mask, void *data);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
@@ -409,11 +408,9 @@ static void view(const Arg *arg);
 static void virtualkeyboard(struct wl_listener *listener, void *data);
 static void virtualpointer(struct wl_listener *listener, void *data);
 static void warpcursor(const Client *c);
-static Client *nextvisible(int i, struct wl_list *from, Monitor *m);
 static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
-static void wl_list_swap(struct wl_list *a, struct wl_list *b);
 static void zoom(const Arg *arg);
 
 /* variables */
@@ -1259,6 +1256,7 @@ createmon(struct wl_listener *listener, void *data)
 	size_t i;
 	struct wlr_output_state state;
 	Monitor *m;
+	Client *c;
 
 	if (!wlr_output_init_render(wlr_output, alloc, drw))
 		return;
@@ -1344,6 +1342,13 @@ createmon(struct wl_listener *listener, void *data)
 		wlr_output_layout_add_auto(output_layout, wlr_output);
 	else
 		wlr_output_layout_add(output_layout, wlr_output, m->m.x, m->m.y);
+
+	wl_list_for_each(c, &clients, link) {
+		if (strcmp(wlr_output->name, c->output) == 0) {
+			c->mon = m;
+		}
+	}
+	updatemons(NULL, NULL);
 }
 
 void
@@ -1577,6 +1582,7 @@ destroynotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->unmap.link);
 		wl_list_remove(&c->maximize.link);
 	}
+	free(c->output);
 	free(c);
 }
 
@@ -2104,6 +2110,10 @@ mapnotify(struct wl_listener *listener, void *data)
 	} else {
 		applyrules(c);
 	}
+	c->output = strdup(c->mon->wlr_output->name);
+	if (c->output == NULL) {
+		die("oom");
+	}
 	drawbars();
 
 unset_fullscreen:
@@ -2433,24 +2443,6 @@ void
 quit(const Arg *arg)
 {
 	wl_display_terminate(dpy);
-}
-
-void
-relativeswap(const Arg *arg)
-{
-	Client *trgt, *sel = focustop(selmon);
-
-	if (!sel || !selmon)
-		return;
-
-	trgt = nextvisible(arg->i, &sel->link, selmon);
-	if (!trgt || trgt == sel)
-		return;
-
-	wl_list_swap(&sel->link, &trgt->link);
-
-	focusclient(sel, 1);
-	arrange(selmon);
 }
 
 void
@@ -3085,8 +3077,14 @@ void
 tagmon(const Arg *arg)
 {
 	Client *sel = focustop(selmon);
-	if (sel)
-		setmon(sel, dirtomon(arg->i), 0);
+	if (!sel)
+		return;
+	setmon(sel, dirtomon(arg->i), 0);
+	free(sel->output);
+	sel->output = strdup(sel->mon->wlr_output->name);
+	if (sel->output == NULL) {
+		die("oom");
+	}
 }
 
 Client *
@@ -3538,28 +3536,6 @@ virtualpointer(struct wl_listener *listener, void *data)
 		wlr_cursor_map_input_to_output(cursor, device, event->suggested_output);
 }
 
-Client *
-nextvisible(int i, struct wl_list *from, Monitor *m)
-{
-	Client *c;
-	if (i >= 0){
-		wl_list_for_each(c, from, link) {
-			// if (VISIBLEON(c , m) && &c->link != from && i--)
-			if (VISIBLEON(c , m)) {
-				if (--i == 0)
-					return c;
-			}
-		}
-	} else if (i < 0) {
-		wl_list_for_each_reverse(c, from, link) {
-			if (VISIBLEON(c , m))
-				if (++i == 0)
-					return c;
-		}
-	}
-	return NULL;
-}
-
 void
 warpcursor(const Client *c) {
 	if (cursor_mode != CurNormal) {
@@ -3589,29 +3565,6 @@ xytomon(double x, double y)
 {
 	struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);
 	return o ? o->data : NULL;
-}
-
-void
-wl_list_swap(struct wl_list *a, struct wl_list *b)
-{
-	struct wl_list *prev_a = a->prev;
-	struct wl_list *prev_b = b->prev;
-
-	if (prev_b == a) {
-		wl_list_remove(a);
-		wl_list_insert(b, a);
-		return;
-	}
-	if (prev_a == b) {
-		wl_list_remove(b);
-		wl_list_insert(a, b);
-		return;
-	}
-	wl_list_remove(a);
-	wl_list_insert(prev_b, a);
-
-	wl_list_remove(b);
-	wl_list_insert(prev_a, b);
 }
 
 void
