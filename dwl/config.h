@@ -215,7 +215,7 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_asciitilde, spawn,          SHCMD("bemenubookmarks select_browser") },
     { MODKEY,                    XKB_KEY_grave,      spawn,          SHCMD("bemenubookmarks select") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,          spawn,          SHCMD("bemenubookmarks add") },
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_E,          spawn,          SHCMD("bemenuunicode") },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,          spawn,          SHCMD("bemenuunicode") },
     { 0,                         XKB_KEY_Print,      spawn,          SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_space,      spawn,          SHCMD("playerctl -p mpd play-pause") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,     spawn,          SHCMD("playerctl -p mpd next") },
