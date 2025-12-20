@@ -249,7 +249,7 @@ typedef struct {
 	int x, y;
 	int resx;
 	int resy;
-	float rate;
+	double rate;
 	int mode;
 	int adaptive;
 } MonitorRule;

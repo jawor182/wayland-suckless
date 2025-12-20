@@ -32,7 +32,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "brave"
+#define BROWSER "librewolf"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
@@ -169,7 +169,7 @@ static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c"
 static const char *spfiles[]    = {"f", TERMINAL, "-T", "spfiles","-e","yazi", NULL};
 static const char *spsysmon[]   = {"M", TERMINAL, "-T", "spsysmon","-e","btop", NULL};
 static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
-static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsboat", NULL};
+static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsraft", NULL};
 
 
 static const Key keys[] = {
