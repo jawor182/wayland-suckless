@@ -394,6 +394,7 @@ static void movecenter(const Arg *arg);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
+static void togglepassthrough(const Arg *arg);
 static void togglegaps(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
@@ -847,6 +848,11 @@ buttonpress(struct wl_listener *listener, void *data)
 		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
 		for (b = buttons; b < END(buttons); b++) {
 			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
+				if (passthrough) {
+					if (b->func != togglepassthrough) continue;
+					b->func(&b->arg);
+					break;
+				}
 				b->func(click == ClkTagBar && b->arg.i == 0 ? &arg : &b->arg);
 				return;
 			}
@@ -1928,6 +1934,8 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
 	for (k = keys; k < END(keys); k++) {
 		if (CLEANMASK(mods) == CLEANMASK(k->mod)
 				&& sym == k->keysym && k->func) {
+			if (passthrough && k->func != togglepassthrough)
+				continue;
 			k->func(&k->arg);
 			return 1;
 		}
@@ -3245,6 +3253,12 @@ togglescratch(const Arg *arg)
 	} else{
 		spawnscratch(arg);
 	}
+}
+
+void
+togglepassthrough(const Arg *arg)
+{
+	passthrough = !passthrough;
 }
 
 void
