@@ -157,7 +157,7 @@ static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { "thunderbird", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL, "-e", "yazi", NULL };
+static const char *fileManager[]     = { TERMINAL, "-e", "lf", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
@@ -167,7 +167,7 @@ static const char *communicator[]    = { "discord", "--enable-features=UseOzoneP
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
 static const char *spsound[]    = {"s", TERMINAL, "-T", "pulsemixer","-e","pulsemixer", NULL};
 static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *spfiles[]    = {"f", TERMINAL, "-T", "spfiles","-e","yazi", NULL};
+static const char *spfiles[]    = {"f", TERMINAL, "-T", "spfiles","-e","lf", NULL};
 static const char *spsysmon[]   = {"M", TERMINAL, "-T", "spsysmon","-e","btop", NULL};
 static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
 static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsraft", NULL};
