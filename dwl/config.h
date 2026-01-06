@@ -33,7 +33,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "librewolf"
+#define BROWSER "brave"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
