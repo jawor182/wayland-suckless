@@ -3569,7 +3569,7 @@ updatebar(Monitor *m)
 	m->b.scale = m->wlr_output->scale;
 	m->lrpad = m->drw->font->height;
 	m->b.height = m->drw->font->height + 2;
-	m->b.real_height = (int)((float)m->b.height / m->wlr_output->scale);
+  m->b.real_height = (int)ceilf((float)m->b.height / m->wlr_output->scale);
 }
 
 void

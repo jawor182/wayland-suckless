@@ -21,7 +21,7 @@ static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","N
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */ /* last value modified if weird behavior then revert to 1.0f */
 static uint32_t colors[][3]                = {
 	/*               fg          bg          border    */
-  [SchemeNorm] = { 0xbbbbbbff, 0x282828ff, 0x928374ff },
+  [SchemeNorm] = { 0xebdbb2ff, 0x282828ff, 0x928374ff },
   [SchemeSel]  = { 0x282828ff, 0xd65d0eff, 0xd65d0eff },
   [SchemeUrg]  = { 0,          0xfb4934ff, 0xfb4934ff },
 };
