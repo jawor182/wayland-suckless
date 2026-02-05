@@ -33,7 +33,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "brave"
+#define BROWSER "librewolf"
 
 /* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
@@ -44,6 +44,8 @@ static const Rule rules[] = {
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
+	{ NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
+	{ NULL,                          "news",            1 << 4,       0,            0,          1,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
@@ -52,12 +54,7 @@ static const Rule rules[] = {
     { "xdg-desktop-portal",          NULL,              0,            1,            0,          0,         -1,       0    },
     { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
 	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
-	{ NULL,                          "pulsemixer",      0,            1,            1,          1,         -1,      's'   },
-	{ NULL,                          "spnotes",         0,            1,            1,          1,         -1,      'n'   },
-	{ NULL,                          "spfiles",         0,            1,            1,          1,         -1,      'f'   },
-	{ NULL,                          "spsysmon",        0,            1,            1,          1,         -1,      'M'   },
 	{ NULL,                          "spmusic",         0,            1,            1,          1,         -1,      'm'   },
-	{ NULL,                          "sprss",           0,            1,            1,          1,         -1,      'r'   },
 
 };
 
@@ -155,9 +152,10 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 static const char *termcmd[]         = { TERMINAL, NULL };
 static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
-static const char *email[]           = { "thunderbird", NULL };
+static const char *email[]           = { TERMINAL,"-T","email", "-e", "neomutt", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL, "-e", "lf", NULL };
+static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "yazi", NULL };
+static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
@@ -165,12 +163,7 @@ static const char *communicator[]    = { "discord", "--enable-features=UseOzoneP
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
-static const char *spsound[]    = {"s", TERMINAL, "-T", "pulsemixer","-e","pulsemixer", NULL};
-static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *spfiles[]    = {"f", TERMINAL, "-T", "spfiles","-e","lf", NULL};
-static const char *spsysmon[]   = {"M", TERMINAL, "-T", "spsysmon","-e","btop", NULL};
 static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
-static const char *sprss[]      = {"r", TERMINAL, "-T", "sprss","-e","newsraft", NULL};
 
 
 static const Key keys[] = {
@@ -180,11 +173,6 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Return,     spawn,          {.v = termcmd} },
 	{ MODKEY,                    XKB_KEY_b,          togglebar,      {0} },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Return,     togglescratch,  {.v = spterm } },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_s,          togglescratch,  {.v = spsound } },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_n,          togglescratch,  {.v = spnotes } },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_f,          togglescratch,  {.v = spfiles } },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_m,          togglescratch,  {.v = spsysmon } },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,          togglescratch,  {.v = sprss }},
 	{ MODKEY,                    XKB_KEY_m,          togglescratch,  {.v = spmusic } },
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
@@ -203,6 +191,7 @@ static const Key keys[] = {
     { MODKEY,                    XKB_KEY_n,          spawn,          {.v = notes } },
     { MODKEY,                    XKB_KEY_f,          spawn,          {.v = fileManager } },
     { MODKEY,                    XKB_KEY_p,          spawn,          {.v = passwords } },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,          spawn,          {.v = news } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,          spawn,          {.v = books } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,          spawn,          {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,     spawn,          {.v = lockscreen } },
@@ -218,12 +207,12 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,          spawn,          SHCMD("bemenubookmarks add") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,          spawn,          SHCMD("bemenuunicode") },
     { 0,                         XKB_KEY_Print,      spawn,          SHCMD("screenshot") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,          spawn,          SHCMD("playerctl -p mpd play-pause && pkill -RTMIN+3 someblocks") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,     spawn,          SHCMD("playerctl -p mpd next && pkill -RTMIN+3 someblocks") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,      spawn,          SHCMD("playerctl -p mpd previous && pkill -RTMIN+3 someblocks") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,      spawn,          SHCMD("playerctl -p mpd volume 0.05+") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,      spawn,          SHCMD("playerctl -p mpd volume 0.05-") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,          spawn,          SHCMD("playerctl -p mpd pause && playerctl -p mpd position 0 && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,          spawn,          SHCMD("mpc toggle && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,     spawn,          SHCMD("mpc next && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,      spawn,          SHCMD("mpc prev && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,      spawn,          SHCMD("mpc volume +5") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,      spawn,          SHCMD("mpc volume -5") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,          spawn,          SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_v,          setlayout,      {.v = &layouts[1]} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
