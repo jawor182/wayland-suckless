@@ -411,7 +411,6 @@ static void urgent(struct wl_listener *listener, void *data);
 static void view(const Arg *arg);
 static void virtualkeyboard(struct wl_listener *listener, void *data);
 static void virtualpointer(struct wl_listener *listener, void *data);
-static void warpcursor(const Client *c);
 static Monitor *xytomon(double x, double y);
 static Client *nextvisible(int i, struct wl_list *from, Monitor *m);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
@@ -641,7 +640,6 @@ arrange(Monitor *m)
 		m->lt[m->sellt]->arrange(m);
 	motionnotify(0, NULL, 0, 0, 0, 0);
 	checkidleinhibitor(NULL);
-	warpcursor(focustop(selmon));
 }
 
 void
@@ -1752,7 +1750,6 @@ focusclient(Client *c, int lift)
 
 	/* Warp cursor to center of client if it is outside */
 	if (lift)
-		warpcursor(c);
 
 	/* Raise client in stacking order if requested */
 	if (c && lift)
@@ -2217,81 +2214,75 @@ motionabsolute(struct wl_listener *listener, void *data)
 
 void
 motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double dy,
-		double dx_unaccel, double dy_unaccel)
+        double dx_unaccel, double dy_unaccel)
 {
-	double sx = 0, sy = 0, sx_confined, sy_confined;
-	Client *c = NULL, *w = NULL;
-	LayerSurface *l = NULL;
-	struct wlr_surface *surface = NULL;
-	struct wlr_pointer_constraint_v1 *constraint;
+    double sx = 0, sy = 0, sx_confined, sy_confined;
+    Client *c = NULL, *w = NULL;
+    LayerSurface *l = NULL;
+    struct wlr_surface *surface = NULL;
+    struct wlr_pointer_constraint_v1 *constraint;
 
-	/* Find the client under the pointer and send the event along. */
-	xytonode(cursor->x, cursor->y, &surface, &c, NULL, &sx, &sy);
+    if (time) {
+        wlr_relative_pointer_manager_v1_send_relative_motion(
+                relative_pointer_mgr, seat, (uint64_t)time * 1000,
+                dx, dy, dx_unaccel, dy_unaccel);
 
-	if (cursor_mode == CurPressed && !seat->drag
-			&& surface != seat->pointer_state.focused_surface
-			&& toplevel_from_wlr_surface(seat->pointer_state.focused_surface, &w, &l) >= 0) {
-		c = w;
-		surface = seat->pointer_state.focused_surface;
-		sx = cursor->x - (l ? l->scene->node.x : w->geom.x);
-		sy = cursor->y - (l ? l->scene->node.y : w->geom.y);
-	}
+        wl_list_for_each(constraint, &pointer_constraints->constraints, link)
+            cursorconstrain(constraint);
 
-	/* time is 0 in internal calls meant to restore pointer focus. */
-	if (time) {
-		wlr_relative_pointer_manager_v1_send_relative_motion(
-				relative_pointer_mgr, seat, (uint64_t)time * 1000,
-				dx, dy, dx_unaccel, dy_unaccel);
+        if (active_constraint && cursor_mode != CurResize && cursor_mode != CurMove) {
+            toplevel_from_wlr_surface(active_constraint->surface, &c, NULL);
+            if (c && active_constraint->surface == seat->pointer_state.focused_surface) {
+                sx = cursor->x - c->geom.x - c->bw;
+                sy = cursor->y - c->geom.y - c->bw;
+                if (wlr_region_confine(&active_constraint->region, sx, sy,
+                        sx + dx, sy + dy, &sx_confined, &sy_confined)) {
+                    dx = sx_confined - sx;
+                    dy = sy_confined - sy;
+                }
+                if (active_constraint->type == WLR_POINTER_CONSTRAINT_V1_LOCKED)
+                    return;
+            }
+        }
 
-		wl_list_for_each(constraint, &pointer_constraints->constraints, link)
-			cursorconstrain(constraint);
+        wlr_cursor_move(cursor, device, dx, dy);
+        wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
 
-		if (active_constraint && cursor_mode != CurResize && cursor_mode != CurMove) {
-			toplevel_from_wlr_surface(active_constraint->surface, &c, NULL);
-			if (c && active_constraint->surface == seat->pointer_state.focused_surface) {
-				sx = cursor->x - c->geom.x - c->bw;
-				sy = cursor->y - c->geom.y - c->bw;
-				if (wlr_region_confine(&active_constraint->region, sx, sy,
-						sx + dx, sy + dy, &sx_confined, &sy_confined)) {
-					dx = sx_confined - sx;
-					dy = sy_confined - sy;
-				}
+        if (sloppyfocus)
+            selmon = xytomon(cursor->x, cursor->y);
+    }
 
-				if (active_constraint->type == WLR_POINTER_CONSTRAINT_V1_LOCKED)
-					return;
-			}
-		}
+    xytonode(cursor->x, cursor->y, &surface, &c, NULL, &sx, &sy);
 
-		wlr_cursor_move(cursor, device, dx, dy);
-		wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
+    if (cursor_mode == CurPressed && !seat->drag
+            && surface != seat->pointer_state.focused_surface
+            && toplevel_from_wlr_surface(seat->pointer_state.focused_surface, &w, &l) >= 0) {
+        c = w;
+        surface = seat->pointer_state.focused_surface;
+        sx = cursor->x - (l ? l->scene->node.x : w->geom.x);
+        sy = cursor->y - (l ? l->scene->node.y : w->geom.y);
+    }
 
-		/* Update selmon (even while dragging a window) */
-		if (sloppyfocus)
-			selmon = xytomon(cursor->x, cursor->y);
-	}
+    if (sloppyfocus && time) {
+        focusclient(c, 0);
+    }
 
-	/* Update drag icon's position */
-	wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
+    wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
 
-	/* If we are currently grabbing the mouse, handle and return */
-	if (cursor_mode == CurMove) {
-		/* Move the grabbed client to the new position. */
-		resize(grabc, (struct wlr_box){.x = (int)round(cursor->x) - grabcx, .y = (int)round(cursor->y) - grabcy,
-			.width = grabc->geom.width, .height = grabc->geom.height}, 1);
-		return;
-	} else if (cursor_mode == CurResize) {
-		resize(grabc, (struct wlr_box){.x = grabc->geom.x, .y = grabc->geom.y,
-			.width = (int)round(cursor->x) - grabc->geom.x, .height = (int)round(cursor->y) - grabc->geom.y}, 1);
-		return;
-	}
+    if (cursor_mode == CurMove) {
+        resize(grabc, (struct wlr_box){.x = (int)round(cursor->x) - grabcx, .y = (int)round(cursor->y) - grabcy,
+            .width = grabc->geom.width, .height = grabc->geom.height}, 1);
+        return;
+    } else if (cursor_mode == CurResize) {
+        resize(grabc, (struct wlr_box){.x = grabc->geom.x, .y = grabc->geom.y,
+            .width = (int)round(cursor->x) - grabc->geom.x, .height = (int)round(cursor->y) - grabc->geom.y}, 1);
+        return;
+    }
 
-	/* If there's no client surface under the cursor, set the cursor image to a
-	 * default. This is what makes the cursor image appear when you move it
-	 * off of a client or over its border. */
-	if (!surface && !seat->drag)
-		wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
+    if (!surface && !seat->drag)
+        wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
 
-	pointerfocus(c, surface, sx, sy, time);
+    pointerfocus(c, surface, sx, sy, time);
 }
 
 void
@@ -3678,28 +3669,6 @@ nextvisible(int i, struct wl_list *from, Monitor *m)
 	return NULL;
 }
 
-
-void
-warpcursor(const Client *c)
-{
-    if (cursor_mode != CurNormal) {
-        return;
-    }
-
-    if (!c && selmon) {
-        if (cursor->x < selmon->w.x || cursor->x > selmon->w.x + selmon->w.width ||
-            cursor->y < selmon->w.y || cursor->y > selmon->w.y + selmon->w.height)
-            wlr_cursor_warp_closest(cursor, NULL,
-                selmon->w.x + selmon->w.width / 2.0,
-                selmon->w.y + selmon->w.height / 2.0);
-    }
-    
-    else if (c) {
-        wlr_cursor_warp_closest(cursor, NULL,
-            c->geom.x + c->geom.width / 2.0,
-            c->geom.y + c->geom.height / 2.0);
-    }
-}
 
 Monitor *
 xytomon(double x, double y)
