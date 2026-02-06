@@ -587,11 +587,6 @@ applyrules(Client *c)
 		}
 	}
 
-	if (mon) {
-		c->geom.x = (mon->w.width - c->geom.width) / 2 + mon->m.x;
-		c->geom.y = (mon->w.height - c->geom.height) / 2 + mon->m.y;
-	}
-
 	c->isfloating |= client_is_float_type(c);
 	if (enableautoswallow && !c->noswallow && !c->isfloating &&
 			!c->surface.xdg->initial_commit) {
@@ -2160,10 +2155,6 @@ mapnotify(struct wl_listener *listener, void *data)
 	 * If there is no parent, apply rules */
 	if ((p = client_get_parent(c))) {
 		c->isfloating = 1;
-		if (p->mon) {
-			c->geom.x = (p->mon->w.width - c->geom.width) / 2 + p->mon->m.x;
-			c->geom.y = (p->mon->w.height - c->geom.height) / 2 + p->mon->m.y;
-		}
 		setmon(c, p->mon, p->tags);
 	} else {
 		applyrules(c);
@@ -3273,7 +3264,6 @@ togglegaps(const Arg *arg)
 void
 _movecenter(Client *c, int interact)
 {
-	Monitor *mon = selmon;
 	struct wlr_box b;
 
 	if (!c || !c->mon) {
@@ -3286,8 +3276,8 @@ _movecenter(Client *c, int interact)
 
 	b = respect_monitor_reserved_area ? c->mon->w : c->mon->m;
 	resize(c, (struct wlr_box){
-		.x = c->geom.x = (mon->w.width - c->geom.width) / 2 + mon->m.x,
-		.y = c->geom.y = (mon->w.height - c->geom.height) / 2 + mon->m.y,
+		.x = (b.width - c->geom.width) / 2 + b.x,
+		.y = (b.height - c->geom.height) / 2 + b.y,
 		.width = c->geom.width,
 		.height = c->geom.height,
 	}, interact);
