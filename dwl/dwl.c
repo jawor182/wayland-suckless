@@ -2253,6 +2253,7 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
     LayerSurface *l = NULL;
     struct wlr_surface *surface = NULL;
     struct wlr_pointer_constraint_v1 *constraint;
+    struct Monitor *m = selmon;
 
     if (time) {
         wlr_relative_pointer_manager_v1_send_relative_motion(
@@ -2281,7 +2282,7 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
         wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
 
         if (sloppyfocus)
-            selmon = xytomon(cursor->x, cursor->y);
+            m = xytomon(cursor->x, cursor->y);
     }
 
     xytonode(cursor->x, cursor->y, &surface, &c, NULL, &sx, &sy);
@@ -2295,7 +2296,8 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
         sy = cursor->y - (l ? l->scene->node.y : w->geom.y);
     }
 
-    if (sloppyfocus && time) {
+    if (sloppyfocus && time && (m != selmon || c)) {
+        selmon = m;
         focusclient(c, 0);
     }
 
@@ -3274,7 +3276,6 @@ void
 _movecenter(Client *c, int interact)
 {
 	Monitor *mon = selmon;
-	struct wlr_box b;
 
 	if (!c || !c->mon) {
 		return;
@@ -3284,7 +3285,6 @@ _movecenter(Client *c, int interact)
 		return;
 	}
 
-	b = respect_monitor_reserved_area ? c->mon->w : c->mon->m;
 	resize(c, (struct wlr_box){
 		.x = c->geom.x = (mon->w.width - c->geom.width) / 2 + mon->m.x,
 		.y = c->geom.y = (mon->w.height - c->geom.height) / 2 + mon->m.y,
