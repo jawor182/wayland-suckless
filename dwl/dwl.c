@@ -2181,11 +2181,6 @@ unset_fullscreen:
 		if (w != c && w != p && w->isfullscreen && m == w->mon && (w->tags & c->tags))
 			setfullscreen(w, 0);
 	}
-  if (c == focustop(selmon) && cursor_mode == CurNormal) {
-		wlr_cursor_warp_closest(cursor, NULL,
-			c->geom.x + c->geom.width  / 2.0,
-			c->geom.y + c->geom.height / 2.0);
-	}
 }
 
 void
