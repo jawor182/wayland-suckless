@@ -25,6 +25,7 @@
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_drm.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
+#include <wlr/types/wlr_ext_data_control_v1.h>
 #include <wlr/types/wlr_fractional_scale_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
@@ -1816,36 +1817,35 @@ focusclient(Client *c, int lift)
 void
 focusmon(const Arg *arg)
 {
-	int i = 0, nmons = wl_list_length(&mons);
-	Monitor *m;
+  int i = 0, nmons = wl_list_length(&mons);
+  Monitor *m;
 
-	if (!nmons)
-		return;
+  if (!nmons)
+    return;
 
-	do
-		m = dirtomon(arg->i);
-	while (!m->wlr_output->enabled && i++ < nmons);
+  do
+  m = dirtomon(arg->i);
+  while (!m->wlr_output->enabled && i++ < nmons);
 
-	if (m == selmon)
-		return;
+  if (m == selmon)
+    return;
 
-	selmon = m;
+  selmon = m;
+  Client *c = focustop(selmon);
 
-	Client *c = focustop(selmon);
-	focusclient(c, 1);
+  if (cursor_mode == CurNormal) {
+    if (c) {
+      wlr_cursor_warp_closest(cursor, NULL,
+                              c->geom.x + c->geom.width  / 2.0,
+                              c->geom.y + c->geom.height / 2.0);
+    } else {
+      wlr_cursor_warp_closest(cursor, NULL,
+                              selmon->m.x + selmon->m.width  / 2.0,
+                              selmon->m.y + selmon->m.height / 2.0);
+    }
+  }
 
-	if (cursor_mode != CurNormal)
-		return;
-
-	if (c) {
-		wlr_cursor_warp_closest(cursor, NULL,
-			c->geom.x + c->geom.width  / 2.0,
-			c->geom.y + c->geom.height / 2.0);
-	} else {
-		wlr_cursor_warp_closest(cursor, NULL,
-			selmon->m.x + selmon->m.width  / 2.0,
-			selmon->m.y + selmon->m.height / 2.0);
-	}
+  focusclient(c, 1);
 }
 
 void
@@ -2248,7 +2248,6 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
     LayerSurface *l = NULL;
     struct wlr_surface *surface = NULL;
     struct wlr_pointer_constraint_v1 *constraint;
-    struct Monitor *m = selmon;
 
     if (time) {
         wlr_relative_pointer_manager_v1_send_relative_motion(
@@ -2277,7 +2276,7 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
         wlr_idle_notifier_v1_notify_activity(idle_notifier, seat);
 
         if (sloppyfocus)
-            m = xytomon(cursor->x, cursor->y);
+           selmon = xytomon(cursor->x, cursor->y);
     }
 
     xytonode(cursor->x, cursor->y, &surface, &c, NULL, &sx, &sy);
@@ -2289,11 +2288,6 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
         surface = seat->pointer_state.focused_surface;
         sx = cursor->x - (l ? l->scene->node.x : w->geom.x);
         sy = cursor->y - (l ? l->scene->node.y : w->geom.y);
-    }
-
-    if (sloppyfocus && time && (m != selmon || c)) {
-        selmon = m;
-        focusclient(c, 0);
     }
 
     wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
@@ -2885,6 +2879,7 @@ setup(void)
 	wlr_export_dmabuf_manager_v1_create(dpy);
 	wlr_screencopy_manager_v1_create(dpy);
 	wlr_data_control_manager_v1_create(dpy);
+  wlr_ext_data_control_manager_v1_create(dpy, 1);
 	wlr_primary_selection_v1_device_manager_create(dpy);
 	wlr_viewporter_create(dpy);
 	wlr_single_pixel_buffer_manager_v1_create(dpy);

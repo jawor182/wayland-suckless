@@ -41,6 +41,7 @@ static const Rule rules[] = {
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
     { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
+    { "steam",                       "Steam",           1 << 2,       0,            0,          0,          0,       0    },
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
 	{ NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
@@ -54,6 +55,7 @@ static const Rule rules[] = {
     { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
 	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
 	{ NULL,                          "spmusic",         0,            1,            1,          1,         -1,      'm'   },
+	{ NULL,                          "spcal",           0,            1,            1,          1,         -1,      'c'   },
 
 };
 
@@ -164,6 +166,7 @@ static const char *communicator[]    = { "discord", "--enable-features=UseOzoneP
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
 static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
+static const char *spcal[]      = {"c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
 
 
 static const Key keys[] = {
@@ -174,6 +177,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_b,          togglebar,      {0} },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Return,     togglescratch,  {.v = spterm } },
 	{ MODKEY,                    XKB_KEY_m,          togglescratch,  {.v = spmusic } },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,          togglescratch,  {.v = spcal } },
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,          relativeswap,   {.i = +1} },
