@@ -56,6 +56,7 @@ static const Rule rules[] = {
 	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
 	{ NULL,                          "spmusic",         0,            1,            1,          1,         -1,      'm'   },
 	{ NULL,                          "spcal",           0,            1,            1,          1,         -1,      'c'   },
+	{ NULL,                          "spcalc",          0,            1,            1,          1,         -1,      'C'   },
 
 };
 
@@ -167,6 +168,7 @@ static const char *communicator[]    = { "discord", "--enable-features=UseOzoneP
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
 static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
 static const char *spcal[]      = {"c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
+static const char *spcalc[]     = {"C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
 
 
 static const Key keys[] = {
@@ -178,6 +180,7 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Return,     togglescratch,  {.v = spterm } },
 	{ MODKEY,                    XKB_KEY_m,          togglescratch,  {.v = spmusic } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,          togglescratch,  {.v = spcal } },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,          togglescratch,  {.v = spcalc } },
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,          relativeswap,   {.i = +1} },
