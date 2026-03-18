@@ -8,7 +8,7 @@ static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static int enableautoswallow               = 1; /* enables autoswallowing newly spawned clients */
 static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
-static const int smartgaps                 = 1;  /* 1 means no outer gap when there is only one window */
+static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8; /* gap pixel between windows */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
@@ -53,11 +53,11 @@ static const Rule rules[] = {
     { "wev",                         NULL,              0,            0,            0,          1,         -1,       0    },
     { "xdg-desktop-portal",          NULL,              0,            1,            0,          0,         -1,       0    },
     { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
-	{ NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
-	{ NULL,                          "spmusic",         0,            1,            1,          1,         -1,      'm'   },
-	{ NULL,                          "spcal",           0,            1,            1,          1,         -1,      'c'   },
-	{ NULL,                          "spcalc",          0,            1,            1,          1,         -1,      'C'   },
-	{ NULL,                          "spnotes",         0,            1,            1,          1,         -1,      'n'   },
+	{ NULL,                          "spterm",          0,            1,            0,          1,         -1,      't'   },
+	{ NULL,                          "spmusic",         0,            1,            0,          1,         -1,      'm'   },
+	{ NULL,                          "spcal",           0,            1,            0,          1,         -1,      'c'   },
+	{ NULL,                          "spcalc",          0,            1,            0,          1,         -1,      'C'   },
+	{ NULL,                          "spnotes",         0,            1,            0,          1,         -1,      'n'   },
 
 };
 
@@ -155,9 +155,9 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 static const char *termcmd[]         = { TERMINAL, NULL };
 static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
-static const char *email[]           = { TERMINAL,"-T","email", "-e", "neomutt", NULL };
+static const char *email[]           = { TERMINAL,"-T","email", "-e", "aerc", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "yazi", NULL };
+static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "lf", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
