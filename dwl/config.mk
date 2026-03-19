@@ -3,11 +3,6 @@ VERSION  = `git describe --tags --dirty 2>/dev/null || echo $(_VERSION)`
 
 PKG_CONFIG = pkg-config
 
-# flags
-CPPFLAGS = -D_POSIX_C_SOURCE=200809L -DVERSION=\"$(VERSION)\" $(XWAYLAND)
-CFLAGS   = -O3 -march=native -pipe $(WLR_INCS) $(CPPFLAGS)
-LDFLAGS  = -flto -s $(WLR_LIBS)
-
 # paths
 PREFIX = /usr/local
 MANDIR = $(PREFIX)/share/man
@@ -29,8 +24,8 @@ WLR_LIBS = `$(PKG_CONFIG) --libs wlroots-0.19`
 #	-I$(PWD)/wlroots/0.19/include/wlroots-0.19
 #WLR_LIBS = -Wl,-rpath,$(PWD)/wlroots/0.19/lib64 -L$(PWD)/wlroots/0.19/lib64 -lwlroots-0.19
 
-# XWAYLAND =
-# XLIBS =
+XWAYLAND =
+XLIBS =
 # Uncomment to build XWayland support
 XWAYLAND = -DXWAYLAND
 XLIBS = xcb xcb-icccm

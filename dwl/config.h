@@ -3,30 +3,25 @@
                         ((hex >> 16) & 0xFF) / 255.0f, \
                         ((hex >> 8) & 0xFF) / 255.0f, \
                         (hex & 0xFF) / 255.0f }
-static int passthrough                     = 0;  /* enable passthrough by default */
+/* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static int enableautoswallow               = 1; /* enables autoswallowing newly spawned clients */
-static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
+static float swallowborder                 = 0; /* add this multiplied by borderpx to border when a client is swallowed */
 static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8; /* gap pixel between windows */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
+static const int respect_monitor_reserved_area = 0;  /* 1 to monitor center while respecting the monitor's reserved area, 0 to monitor center */
 static const float rootcolor[]             = COLOR(0x282828ff);
-static const int showbar                   = 1; /* 0 means no bar */
-static const int topbar                    = 1; /* 0 means bottom bar */
-static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","NotoColorEmoji:size=14"};
+static const float bordercolor[]           = COLOR(0x444444ff);
+static const float focuscolor[]            = COLOR(0xd65d0eff);
+static const float urgentcolor[]           = COLOR(0xfb4934ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
-static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */ /* last value modified if weird behavior then revert to 1.0f */
-static uint32_t colors[][3]                = {
-	/*               fg          bg          border    */
-  [SchemeNorm] = { 0xebdbb2ff, 0x282828ff, 0x928374ff },
-  [SchemeSel]  = { 0x282828ff, 0xd65d0eff, 0xd65d0eff },
-  [SchemeUrg]  = { 0,          0xfb4934ff, 0xfb4934ff },
-};
+static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 
-/* tagging */
-static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+/* tagging - TAGCOUNT must be no greater than 31 */
+#define TAGCOUNT (9)
 
 /* logging */
 static int log_level = WLR_ERROR;
@@ -34,7 +29,6 @@ static int log_level = WLR_ERROR;
 #define TERMINAL "foot"
 #define BROWSER "librewolf"
 
-/* NOTE: ALWAYS keep a rule declared even if you don't use rules (e.g leave at least one example) */
 static const Rule rules[] = {
 	/* app_id                        title              tags mask     isfloating   isterm   noswallow   monitor      scratchkey */
     { "mpv",                         NULL,              0,            0,            0,          0,          0,       0    },
@@ -71,16 +65,13 @@ static const Layout layouts[] = {
 
 /* monitors */
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator
- * WARNING: negative values other than (-1, -1) cause problems with Xwayland clients
- * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899
-*/
-/* NOTE: ALWAYS add a fallback rule, even if you are completely sure it won't be used */
-
+ * WARNING: negative values other than (-1, -1) cause problems with Xwayland clients due to
+ * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899 */
 static const MonitorRule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
     { "eDP-1",     0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
-    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001,         1,    0  },
-    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973,          1,    0  },
+    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,         1,    0  },
+    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,          1,    0  },
     { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
 };
 
@@ -152,7 +143,7 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
 
 /* commands */
-static const char *termcmd[]         = { TERMINAL, NULL };
+static const char *termcmd[]         = { "foot", NULL };
 static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { TERMINAL,"-T","email", "-e", "aerc", NULL };
@@ -172,7 +163,6 @@ static const char *spcal[]      = {"c", TERMINAL, "-T", "spcal","-e","calcurse",
 static const char *spcalc[]     = {"C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
 static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 
-
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
 	/* modifier                  key                 function        argument */
@@ -186,7 +176,7 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_n,          togglescratch,  {.v = spnotes } },
 	{ MODKEY,                    XKB_KEY_j,          focusstack,     {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,          focusstack,     {.i = -1} },
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,          relativeswap,   {.i = +1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,          relativeswap,   {.i = +1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_K,          relativeswap,   {.i = -1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_I,          incnmaster,     {.i = +1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_D,          incnmaster,     {.i = -1} },
@@ -250,7 +240,6 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                  6),
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                   7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                  8),
-	{ MODKEY,                    XKB_KEY_F11,        togglepassthrough, {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Q,          quit,           {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
@@ -264,15 +253,7 @@ static const Key keys[] = {
 };
 
 static const Button buttons[] = {
-	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
-	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[1]} },
-	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
-	{ ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
-	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
-	{ ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
-	{ ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
-	{ ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
-	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
-	{ ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
+	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
 };
