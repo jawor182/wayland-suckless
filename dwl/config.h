@@ -70,8 +70,8 @@ static const Layout layouts[] = {
 static const MonitorRule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
     { "eDP-1",     0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
-    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,         1,    0  },
-    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,          1,    0  },
+    { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        1,    0  },
+    { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
     { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
 };
 
@@ -216,6 +216,7 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,          spawn,          SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
 	{ MODKEY,                    XKB_KEY_t,          setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_v,          setlayout,      {.v = &layouts[1]} },
+	{ MODKEY,                    XKB_KEY_y,          setlayout,      {.v = &layouts[2]} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,      togglefloating, {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_F,          togglefullscreen, {0} },
 	{ MODKEY,                    XKB_KEY_c,          movecenter,     {0} },
