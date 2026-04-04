@@ -473,67 +473,88 @@ draw_frame(Bar *bar)
   char *title_text = custom_title ? bar->title.text : bar->window_title;
 
   /* floating indicator (dwm-style square) */
-  if (bar->floating) {
-    /* proportions tuned to font height */
-    uint32_t boxs = font->height / 7;   // was /9 → too cramped
-    uint32_t boxw = font->height / 4;   // was /7 → too small
-    uint32_t border = 2;                // keep this
+    if (bar->floating) {
+        /* proportions tuned to font height */
+        uint32_t boxs = font->height / 7;
+        uint32_t boxw = font->height / 4;
+        uint32_t border = 2;
 
-    pixman_color_t *fg = (bar->sel && active_color_title)
-      ? &active_fg_color
-      : &inactive_fg_color;
+        pixman_color_t *fg = (bar->sel && active_color_title)
+          ? &active_fg_color
+          : &inactive_fg_color;
 
-    pixman_color_t *bg = (bar->sel && active_color_title)
-      ? &active_bg_color
-      : &inactive_bg_color;
+        pixman_color_t *bg = (bar->sel && active_color_title)
+          ? &active_bg_color
+          : &inactive_bg_color;
 
-    pixman_image_fill_boxes(PIXMAN_OP_SRC, background,
-                            bg, 1, &(pixman_box32_t){
-                            .x1 = x,
-                            .x2 = x + boxw + 2 * boxs,
-                            .y1 = 0,
-                            .y2 = bar->height
-                            });
+        pixman_image_fill_boxes(PIXMAN_OP_SRC, background,
+                                bg, 1, &(pixman_box32_t){
+                                .x1 = x,
+                                .x2 = x + boxw + 2 * boxs,
+                                .y1 = 0,
+                                .y2 = bar->height
+                                });
 
-    pixman_image_fill_boxes(PIXMAN_OP_OVER, foreground,
-                            fg, 1, &(pixman_box32_t){
-                            .x1 = x + boxs,
-                            .x2 = x + boxs + boxw,
-                            .y1 = boxs,
-                            .y2 = boxs + boxw
-                            });
+        pixman_image_fill_boxes(PIXMAN_OP_OVER, foreground,
+                                fg, 1, &(pixman_box32_t){
+                                .x1 = x + boxs,
+                                .x2 = x + boxs + boxw,
+                                .y1 = boxs,
+                                .y2 = boxs + boxw
+                                });
 
-    pixman_image_fill_boxes(PIXMAN_OP_OVER, foreground_mask,
-                            &(pixman_color_t){0xFFFF,0xFFFF,0xFFFF,0xFFFF},
-                            1, &(pixman_box32_t){
-                            .x1 = x + boxs,
-                            .x2 = x + boxs + boxw,
-                            .y1 = boxs,
-                            .y2 = boxs + boxw
-                            });
+        pixman_image_fill_boxes(PIXMAN_OP_OVER, foreground_mask,
+                                &(pixman_color_t){0xFFFF,0xFFFF,0xFFFF,0xFFFF},
+                                1, &(pixman_box32_t){
+                                .x1 = x + boxs,
+                                .x2 = x + boxs + boxw,
+                                .y1 = boxs,
+                                .y2 = boxs + boxw
+                                });
 
-    if (boxw > border * 2) {
-      pixman_image_fill_boxes(PIXMAN_OP_SRC, foreground,
-                              &(pixman_color_t){0}, 1,
-                              &(pixman_box32_t){
-                              .x1 = x + boxs + border,
-                              .x2 = x + boxs + boxw - border,
-                              .y1 = boxs + border,
-                              .y2 = boxs + boxw - border
-                              });
+        if (boxw > border * 2) {
+          pixman_image_fill_boxes(PIXMAN_OP_SRC, foreground,
+                                  &(pixman_color_t){0}, 1,
+                                  &(pixman_box32_t){
+                                  .x1 = x + boxs + border,
+                                  .x2 = x + boxs + boxw - border,
+                                  .y1 = boxs + border,
+                                  .y2 = boxs + boxw - border
+                                  });
 
-      pixman_image_fill_boxes(PIXMAN_OP_SRC, foreground_mask,
-                              &(pixman_color_t){0}, 1,
-                              &(pixman_box32_t){
-                              .x1 = x + boxs + border,
-                              .x2 = x + boxs + boxw - border,
-                              .y1 = boxs + border,
-                              .y2 = boxs + boxw - border
-                              });
-    }
+          pixman_image_fill_boxes(PIXMAN_OP_SRC, foreground_mask,
+                                  &(pixman_color_t){0}, 1,
+                                  &(pixman_box32_t){
+                                  .x1 = x + boxs + border,
+                                  .x2 = x + boxs + boxw - border,
+                                  .y1 = boxs + border,
+                                  .y2 = boxs + boxw - border
+                                  });
+        }
 
-    x += boxw + 2 * boxs;
-  }
+        x += boxw + 2 * boxs;
+      } else  {
+        /* proportions tuned to font height - kept to maintain spacing */
+        uint32_t boxs = font->height / 7;
+        uint32_t boxw = font->height / 4;
+
+        /* Only need the background color now */
+        pixman_color_t *bg = (bar->sel && active_color_title)
+          ? &active_bg_color
+          : &inactive_bg_color;
+
+        /* Draw ONLY the background square */
+        pixman_image_fill_boxes(PIXMAN_OP_SRC, background,
+                                bg, 1, &(pixman_box32_t){
+                                .x1 = x,
+                                .x2 = x + boxw + 2 * boxs,
+                                .y1 = 0,
+                                .y2 = bar->height
+                                });
+
+        /* Advance x to keep layout intact */
+        x += boxw + 2 * boxs;
+      }
 
 	x = draw_text(title_text,
 		      x, y, foreground, foreground_mask, background,
