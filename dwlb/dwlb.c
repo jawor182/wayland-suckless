@@ -460,7 +460,7 @@ draw_frame(Bar *bar)
 		uint32_t title_width = TEXT_WIDTH(custom_title ? bar->title.text : bar->window_title, bar->width - status_width - x, 0);
 		nx = MAX(x, MIN((bar->width - title_width) / 2, bar->width - status_width - title_width));
 	} else {
-		nx = MIN(x + bar->textpadding, bar->width - status_width);
+		nx = MIN(x + 2, bar->width - status_width);
 	}
 	pixman_image_fill_boxes(PIXMAN_OP_SRC, background,
 				bar->sel ? &middle_bg_color_selected : &middle_bg_color, 1,
@@ -1100,7 +1100,7 @@ setup_bar(Bar *bar)
 	bar->textpadding = textpadding;
 	bar->bottom = bottom;
 	bar->hidden = hidden;
-  bar->floating = false;
+    bar->floating = false;
 
 	bar->xdg_output = zxdg_output_manager_v1_get_xdg_output(output_manager, bar->wl_output);
 	if (!bar->xdg_output)
