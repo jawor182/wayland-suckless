@@ -400,6 +400,7 @@ static Monitor *xytomon(double x, double y);
 static void xytonode(double x, double y, struct wlr_surface **psurface,
 		Client **pc, LayerSurface **pl, double *nx, double *ny);
 static void zoom(const Arg *arg);
+static void rotate_clients(const Arg *arg);
 
 /* variables */
 static pid_t child_pid = -1;
@@ -3549,6 +3550,30 @@ zoom(const Arg *arg)
 
 	focusclient(sel, 1);
 	arrange(selmon);
+}
+
+static void rotate_clients(const Arg *arg) {
+	Monitor* m = selmon;
+	Client *c;
+	Client *first = NULL;
+	Client *last = NULL;
+
+	if (arg->i == 0)
+		return;
+
+	wl_list_for_each(c, &clients, link) {
+		if (VISIBLEON(c, m) && !c->isfloating && !c->isfullscreen) {
+			if (first == NULL) first = c;
+			last = c;
+		}
+	}
+	if (first != last) {
+		struct wl_list *append_to = (arg->i > 0) ? &last->link : first->link.prev;
+		struct wl_list *elem = (arg->i > 0) ? &first->link : &last->link;
+		wl_list_remove(elem);
+		wl_list_insert(append_to, elem);
+		arrange(selmon);
+	} 
 }
 
 #ifdef XWAYLAND
