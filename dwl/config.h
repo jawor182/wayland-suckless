@@ -6,6 +6,8 @@
 /* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
+static int enableautoswallow               = 1; /* enables autoswallowing newly spawned clients */
+static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8; /* gap pixel between windows */
@@ -33,28 +35,28 @@ static int log_level = WLR_ERROR;
 #define BROWSER "librewolf"
 
 static const Rule rules[] = {
-  /* app_id                        title              tags mask     isfloating   monitor  scratchkey */
-  { "mpvq",                        NULL,              0,            0,           0,       0    },
-  { "KeePassXC",                   NULL,              1 << 8,       0,           1,       0    },
-  { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,           1,       0    },
-  { "qBittorrent",                 NULL,              1 << 6,       0,           1,       0    },
-  { "steam",                       "Steam",           1 << 2,       0,           0,       0    },
-  { "discord",                     NULL,              1 << 3,       0,           0,       0    },
-  { "calibre-gui",                 NULL,              1 << 3,       0,           1,       0    },
-  { NULL,                          "email",           1 << 2,       0,           1,       0    },
-  { NULL,                          "news",            1 << 4,       0,           1,       0    },
-  { TERMINAL,                      NULL,              0,            0,          -1,       0    },
-  { NULL,                          "floatingterm",    0,            1,          -1,       0    },
-  { "Ghostscript",                 NULL,              0,            0,          -1,       0    },
-  { NULL,                          "Event Tester",    0,            0,          -1,       0    },
-  { "wev",                         NULL,              0,            0,          -1,       0    },
-  { "xdg-desktop-portal",          NULL,              0,            1,          -1,       0    },
-  { "python3",                     NULL,              0,            1,          -1,       0    },
-  { NULL,                          "spterm",          0,            1,          -1,      't'   },
-  { NULL,                          "spmusic",         0,            1,          -1,      'm'   },
-  { NULL,                          "spcal",           0,            1,          -1,      'c'   },
-  { NULL,                          "spcalc",          0,            1,          -1,      'C'   },
-  { NULL,                          "spnotes",         0,            1,          -1,      'n'   },
+    /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
+    { "mpvq",                        NULL,              0,            0,            0,          0,          0,       0    },
+    { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
+    { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
+    { "steam",                       "Steam",           1 << 2,       0,            0,          0,          0,       0    },
+    { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
+    { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
+    { NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
+    { NULL,                          "news",            1 << 4,       0,            0,          1,          1,       0    },
+    { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
+    { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
+    { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
+    { NULL,                          "Event Tester",    0,            0,            0,          1,         -1,       0    },
+    { "wev",                         NULL,              0,            0,            0,          1,         -1,       0    },
+    { "xdg-desktop-portal",          NULL,              0,            1,            0,          0,         -1,       0    },
+    { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
+    { NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
+    { NULL,                          "spmusic",         0,            1,            0,          1,         -1,      'm'   },
+    { NULL,                          "spcal",           0,            1,            0,          1,         -1,      'c'   },
+    { NULL,                          "spcalc",          0,            1,            0,          1,         -1,      'C'   },
+    { NULL,                          "spnotes",         0,            1,            0,          1,         -1,      'n'   },
 
 };
 
@@ -213,6 +215,7 @@ static const Key keys[] = {
   { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,       spawn,            SHCMD("mpc volume +5") },
   { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,       spawn,            SHCMD("mpc volume -5") },
   { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,           spawn,            SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_0,           spawn,            SHCMD("mpc seek 0 && pkill -RTMIN+3 someblocks") },
   { 0,                         XKB_KEY_XF86AudioMute,                 spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+9 someblocks") },
 	{ 0,                         XKB_KEY_XF86AudioLowerVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+9 someblocks"   ) },
 	{ 0,                         XKB_KEY_XF86AudioRaiseVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+9 someblocks"   ) },
