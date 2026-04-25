@@ -32,7 +32,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "librewolf"
+#define BROWSER "helium-browser"
 
 static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
@@ -150,7 +150,7 @@ static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { TERMINAL,"-T","email", "-e", "neomutt", NULL };
 static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "lf", NULL };
+static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "yazi", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
@@ -259,7 +259,7 @@ static const Key keys[] = {
 static const Button buttons[] = {
 	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
 	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[2]} },
-	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[1]} },
+	{ ClkLtSymbol, 0,      BTN_MIDDLE, setlayout,      {.v = &layouts[1]} },
 	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
 	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
 	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
