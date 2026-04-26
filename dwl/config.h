@@ -32,7 +32,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_ERROR;
 
 #define TERMINAL "foot"
-#define BROWSER "helium-browser"
+#define BROWSER "librewolf"
 
 static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
