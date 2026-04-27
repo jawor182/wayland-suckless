@@ -40,7 +40,7 @@ static const Rule rules[] = {
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
     { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
-    { "steam",                       "Steam",           1 << 2,       0,            0,          0,          0,       0    },
+    { "steam",                       NULL,              1 << 2,       0,            0,          0,          0,       0    },
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },

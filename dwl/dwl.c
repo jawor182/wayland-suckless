@@ -124,6 +124,7 @@ struct Client {
 	unsigned int type; /* XDGShell or X11* */
 
 	Monitor *mon;
+	char *output;
 	struct wlr_scene_tree *scene;
 	struct wlr_scene_rect *border[4]; /* top, bottom, left, right */
 	struct wlr_scene_tree *scene_surface;
@@ -138,9 +139,13 @@ struct Client {
 	} surface;
 	struct wlr_xdg_toplevel_decoration_v1 *decoration;
 	struct wl_listener commit;
-    struct wlr_scene *image_capture_scene;
-    struct wlr_ext_image_capture_source_v1 *image_capture_source;
+  struct wlr_scene *image_capture_scene;
+  struct wlr_ext_image_capture_source_v1 *image_capture_source;
+  struct wlr_ext_foreign_toplevel_handle_v1 *ext_foreign_toplevel;
+  union {
     struct wlr_scene_tree *image_capture_tree;
+    struct wlr_scene_surface *image_capture_scene_surface; 
+  } capture;
 	struct wl_listener map;
 	struct wl_listener maximize;
 	struct wl_listener unmap;
@@ -162,7 +167,6 @@ struct Client {
 	int isterm, noswallow;
 	char scratchkey;
 	uint32_t resize; /* configure serial of a pending resize */
-  struct wlr_ext_foreign_toplevel_handle_v1 *ext_foreign_toplevel;
 	pid_t pid;
 	Client *swallowing;  /* client being hidden */
 	Client *swallowedby;
@@ -1013,7 +1017,7 @@ cleanuplisteners(void)
 	wl_list_remove(&request_start_drag.link);
 	wl_list_remove(&start_drag.link);
 	wl_list_remove(&new_session_lock.link);
-    wl_list_remove(&new_foreign_toplevel_capture_request.link);
+  wl_list_remove(&new_foreign_toplevel_capture_request.link);
 #ifdef XWAYLAND
 	wl_list_remove(&new_xwayland_surface.link);
 	wl_list_remove(&xwayland_ready.link);
@@ -1278,6 +1282,7 @@ createmon(struct wl_listener *listener, void *data)
 	size_t i;
 	struct wlr_output_state state;
 	Monitor *m;
+	Client *c;
 
 	if (!wlr_output_init_render(wlr_output, alloc, drw))
 		return;
@@ -1375,6 +1380,13 @@ createmon(struct wl_listener *listener, void *data)
 		wlr_output_layout_add_auto(output_layout, wlr_output);
 	else
 		wlr_output_layout_add(output_layout, wlr_output, m->m.x, m->m.y);
+
+	wl_list_for_each(c, &clients, link) {
+		if (strcmp(wlr_output->name, c->output) == 0) {
+			c->mon = m;
+		}
+	}
+	updatemons(NULL, NULL);
 }
 
 void
@@ -1504,6 +1516,7 @@ destroydecoration(struct wl_listener *listener, void *data)
 {
 	Client *c = wl_container_of(listener, c, destroy_decoration);
 
+  c->decoration = NULL;
 	wl_list_remove(&c->destroy_decoration.link);
 	wl_list_remove(&c->set_decoration_mode.link);
 }
@@ -1609,6 +1622,7 @@ destroynotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->unmap.link);
 		wl_list_remove(&c->maximize.link);
 	}
+	free(c->output);
 	free(c);
 }
 
@@ -2102,10 +2116,10 @@ mapnotify(struct wl_listener *listener, void *data)
 	Monitor *m;
 	int i;
 
-    struct wlr_ext_foreign_toplevel_handle_v1_state foreign_toplevel_state = {
-		.app_id = client_get_appid(c),
-		.title = client_get_title(c),
-	};
+  struct wlr_ext_foreign_toplevel_handle_v1_state foreign_toplevel_state = {
+    .app_id = client_get_appid(c),
+    .title = client_get_title(c),
+  };
 
 
 	/* Create scene tree for this client and its border */
@@ -2116,11 +2130,18 @@ mapnotify(struct wl_listener *listener, void *data)
 			? wlr_scene_xdg_surface_create(c->scene, c->surface.xdg)
 			: wlr_scene_subsurface_tree_create(c->scene, client_surface(c));
 	c->scene->node.data = c->scene_surface->node.data = c;
-    printf("image capture tree\n");
-    c->image_capture_scene = wlr_scene_create();
-    c->ext_foreign_toplevel = wlr_ext_foreign_toplevel_handle_v1_create(foreign_toplevel_list,&foreign_toplevel_state);
-    c->ext_foreign_toplevel->data = c;
-    c->image_capture_tree = wlr_scene_xdg_surface_create(&c->image_capture_scene->tree, c->surface.xdg);
+  printf("image capture tree\n");
+  c->image_capture_scene = wlr_scene_create();
+  c->ext_foreign_toplevel = wlr_ext_foreign_toplevel_handle_v1_create(foreign_toplevel_list,&foreign_toplevel_state);
+  c->ext_foreign_toplevel->data = c;
+  if (c->type == XDGShell) {
+    c->capture.image_capture_tree = wlr_scene_xdg_surface_create(&c->image_capture_scene->tree, c->surface.xdg);
+  #ifdef XWAYLAND
+  } else { /* xwayland */
+    c->capture.image_capture_scene_surface = wlr_scene_surface_create(&c->image_capture_scene->tree, c->surface.xwayland->surface);
+  #endif
+  }
+
 
 
 	client_get_geometry(c, &c->geom);
@@ -2170,6 +2191,10 @@ mapnotify(struct wl_listener *listener, void *data)
 		setmon(c, p->mon, p->tags);
 	} else {
 		applyrules(c);
+	}
+	c->output = strdup(c->mon->wlr_output->name);
+	if (c->output == NULL) {
+		die("oom");
 	}
 	drawbars();
 
@@ -2792,19 +2817,18 @@ setsel(struct wl_listener *listener, void *data)
 	wlr_seat_set_selection(seat, event->source, event->serial);
 }
 static void handle_new_foreign_toplevel_capture_request(struct wl_listener *listener, void *data) {
-	struct wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request *request = data;
-    Client *view = request->toplevel_handle->data;
-    // printf("CAPTURED FINALLY\n");
+  struct wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request *request = data;
+  Client *view = request->toplevel_handle->data;
 
-	if (view->image_capture_source == NULL) {
-		view->image_capture_source = wlr_ext_image_capture_source_v1_create_with_scene_node(
-			&view->image_capture_scene->tree.node, event_loop, alloc, drw);
-		if (view->image_capture_source == NULL) {
-			return;
-		}
-	}
+  if (view->image_capture_source == NULL) {
+    view->image_capture_source = wlr_ext_image_capture_source_v1_create_with_scene_node(
+      &view->image_capture_scene->tree.node, event_loop, alloc, drw);
+    if (view->image_capture_source == NULL) {
+      return;
+    }
+  }
 
-	wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request_accept(request, view->image_capture_source);
+  wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request_accept(request, view->image_capture_source);
 }
 
 void
@@ -2942,10 +2966,10 @@ setup(void)
 			(float [4]){0.1f, 0.1f, 0.1f, 1.0f});
 	wlr_scene_node_set_enabled(&locked_bg->node, 0);
 
-    foreign_toplevel_list =  wlr_ext_foreign_toplevel_list_v1_create(dpy,1);
-    ext_foreign_toplevel_image_capture_source_manager_v1 = wlr_ext_foreign_toplevel_image_capture_source_manager_v1_create(dpy, 1);
-    new_foreign_toplevel_capture_request.notify = handle_new_foreign_toplevel_capture_request;
-    wl_signal_add(&ext_foreign_toplevel_image_capture_source_manager_v1->events.new_request,&new_foreign_toplevel_capture_request);
+  foreign_toplevel_list = wlr_ext_foreign_toplevel_list_v1_create(dpy,1);
+  ext_foreign_toplevel_image_capture_source_manager_v1 = wlr_ext_foreign_toplevel_image_capture_source_manager_v1_create(dpy, 1);
+  new_foreign_toplevel_capture_request.notify = handle_new_foreign_toplevel_capture_request;
+  wl_signal_add(&ext_foreign_toplevel_image_capture_source_manager_v1->events.new_request,&new_foreign_toplevel_capture_request);
 
 
 	/* Use decoration protocols to negotiate server-side decorations */
@@ -3159,8 +3183,14 @@ void
 tagmon(const Arg *arg)
 {
 	Client *sel = focustop(selmon);
-	if (sel)
-		setmon(sel, dirtomon(arg->i), 0);
+	if (!sel)
+		return;
+	setmon(sel, dirtomon(arg->i), 0);
+	free(sel->output);
+	sel->output = strdup(sel->mon->wlr_output->name);
+	if (sel->output == NULL) {
+		die("oom");
+	}
 }
 
 Client *
@@ -3450,11 +3480,18 @@ unmapnotify(struct wl_listener *listener, void *data)
 		setmon(c, NULL, 0);
 		wl_list_remove(&c->flink);
 	}
-    if (c->ext_foreign_toplevel) {
-        wlr_ext_foreign_toplevel_handle_v1_destroy(c->ext_foreign_toplevel);
-    }
+  if (c->ext_foreign_toplevel != NULL) {
+    wlr_ext_foreign_toplevel_handle_v1_destroy(c->ext_foreign_toplevel);
+    c->ext_foreign_toplevel = NULL;
+  }
+#ifdef XWAYLAND
+  if (c->type != XDGShell && c->capture.image_capture_scene_surface) {
+    wlr_scene_node_destroy(&c->capture.image_capture_scene_surface->buffer->node);
+    c->capture.image_capture_scene_surface = NULL;
+  }
+#endif
 
-    wlr_scene_node_destroy(&c->image_capture_scene->tree.node);
+  wlr_scene_node_destroy(&c->image_capture_scene->tree.node);
 	wlr_scene_node_destroy(&c->scene->node);
 	drawbars();
 	motionnotify(0, NULL, 0, 0, 0, 0);
@@ -3614,6 +3651,13 @@ updatetitle(struct wl_listener *listener, void *data)
 	Client *c = wl_container_of(listener, c, set_title);
 	if (c == focustop(c->mon))
 		drawbars();
+  if (c->ext_foreign_toplevel != NULL) {
+    struct wlr_ext_foreign_toplevel_handle_v1_state foreign_toplevel_state = {
+      .app_id = client_get_appid(c),
+      .title = client_get_title(c),
+    };
+    wlr_ext_foreign_toplevel_handle_v1_update_state(c->ext_foreign_toplevel,&foreign_toplevel_state);
+  }
 }
 
 void
