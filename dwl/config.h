@@ -256,6 +256,29 @@ static const Key keys[] = {
 	CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
 };
 
+static const Key lockedkeys[] = {
+	/* Note that Shift changes certain key codes: c -> C, 2 -> at, etc. */
+	/* modifier                  key                 function        argument */
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,           spawn,            SHCMD("mpc toggle && pkill -RTMIN+3 someblocks") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,      spawn,            SHCMD("mpc next && pkill -RTMIN+3 someblocks") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,       spawn,            SHCMD("mpc prev && pkill -RTMIN+3 someblocks") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,       spawn,            SHCMD("mpc volume +5") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,       spawn,            SHCMD("mpc volume -5") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,           spawn,            SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
+  { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_0,           spawn,            SHCMD("mpc seek 0 && pkill -RTMIN+3 someblocks") },
+  { 0,                         XKB_KEY_XF86AudioMute,                 spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+9 someblocks") },
+	{ 0,                         XKB_KEY_XF86AudioLowerVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+9 someblocks"   ) },
+	{ 0,                         XKB_KEY_XF86AudioRaiseVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+9 someblocks"   ) },
+  { 0,                         XKB_KEY_XF86AudioPlay,                 spawn,   SHCMD("playerctl play-pause") },
+  { 0,                         XKB_KEY_XF86AudioNext,                 spawn,   SHCMD("playerctl next") },
+  { 0,                         XKB_KEY_XF86AudioPrev,                 spawn,   SHCMD("playerctl previous") },
+	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_Terminate_Server, quit, {0} },
+#define CHVT(n) { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_XF86Switch_VT_##n, chvt, {.ui = (n)} }
+	CHVT(1), CHVT(2), CHVT(3), CHVT(4), CHVT(5), CHVT(6),
+	CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
+};
+
 static const Button buttons[] = {
 	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
 	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[2]} },
