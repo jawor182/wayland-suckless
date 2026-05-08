@@ -66,13 +66,18 @@ static const Layout layouts[] = {
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator
  * WARNING: negative values other than (-1, -1) cause problems with Xwayland clients due to
  * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899 */
-static const MonitorRule monrules[] = {
-  /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
-  { "0x0521",    0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
-  { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        1,    0  },
-  { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
-  { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
-};
+ static const MonitorRule monrules[] = {
+  /*
+	* mode lets the user decide how dwl should implement the modes:
+	* -1 sets a custom mode following the user's choice
+	* All other numbers set the mode at the index n; 0 is the standard mode; see wlr-randr
+	*/
+  /* name           mfact nmaster scale  layout      rotate/reflect              x       y       resx    resy    rate             mode  adaptive */
+  { "HDMI-A-1",     0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
+  { "DP-1",         0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
+  { NULL,           0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
+ 	/* default monitor rule: can be changed but cannot be eliminated; at least one monitor rule must exist */
+ };
 
 /* keyboard */
 static const struct xkb_rule_names xkb_rules = {
