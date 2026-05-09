@@ -6,21 +6,25 @@
 /* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
-static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8; /* gap pixel between windows */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
 static const int showbar                   = 1; /* 0 means no bar */
 static const int topbar                    = 1; /* 0 means bottom bar */
-static const float rootcolor[]             = COLOR(0x282828ff);
-static const float bordercolor[]           = COLOR(0x928374ff);
-static const float focuscolor[]            = COLOR(0xd65d0eff);
-static const float urgentcolor[]           = COLOR(0xfb4934ff);
+static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
+static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","NotoColorEmoji:size=14"};
+static const float rootcolor[]             = COLOR(0x000000ff);
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
+static uint32_t colors[][3]                = {
+	/*               fg          bg          border    */
+	[SchemeNorm] = { 0xebdbb2ff, 0x282828ff, 0x928374ff },
+	[SchemeSel]  = { 0x282828ff, 0xd65d0eff, 0xd65d0eff },
+	[SchemeUrg]  = { 0,          0,          0xfb4934ff },
+};
 
-/* tagging - TAGCOUNT must be no greater than 31 */
-#define TAGCOUNT (9)
+/* tagging */
+static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 /* logging */
 static int log_level = WLR_ERROR;
@@ -66,23 +70,21 @@ static const Layout layouts[] = {
 /* (x=-1, y=-1) is reserved as an "autoconfigure" monitor position indicator
  * WARNING: negative values other than (-1, -1) cause problems with Xwayland clients due to
  * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899 */
- static const MonitorRule monrules[] = {
-  /*
-	* mode lets the user decide how dwl should implement the modes:
-	* -1 sets a custom mode following the user's choice
-	* All other numbers set the mode at the index n; 0 is the standard mode; see wlr-randr
-	*/
-  /* name           mfact nmaster scale  layout      rotate/reflect              x       y       resx    resy    rate             mode  adaptive */
-  { "HDMI-A-1",     0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
-  { "DP-1",         0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
-  { NULL,           0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
- 	/* default monitor rule: can be changed but cannot be eliminated; at least one monitor rule must exist */
- };
+static const MonitorRule monrules[] = {
+  /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
+  { "0x0521",    0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
+  { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        1,    0  },
+  { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
+  { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
+};
 
 /* keyboard */
 static const struct xkb_rule_names xkb_rules = {
 	/* can specify fields: rules, model, layout, variant, options */
-  .layout = "pl",
+	/* example:
+	.options = "ctrl:nocaps",
+	*/
+	.layout = "pl"
 };
 
 static const int repeat_rate = 60;
@@ -279,7 +281,14 @@ static const Key lockedkeys[] = {
 };
 
 static const Button buttons[] = {
-	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
-	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
+	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[2]} },
+	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
+	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+	{ ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
+	{ ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
+	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
+	{ ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
 };

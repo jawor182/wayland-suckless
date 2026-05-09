@@ -2,7 +2,6 @@ _VERSION = 0.8-dev
 VERSION  = `git describe --tags --dirty 2>/dev/null || echo $(_VERSION)`
 
 PKG_CONFIG = pkg-config
-CFLAGS = -O3
 
 # paths
 PREFIX = /usr/local
