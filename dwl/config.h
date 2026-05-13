@@ -27,7 +27,7 @@ static uint32_t colors[][3]                = {
 static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 /* logging */
-static int log_level = WLR_ERROR;
+static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
 #define BROWSER "librewolf"
@@ -73,9 +73,9 @@ static const Layout layouts[] = {
 static const MonitorRule monrules[] = {
   /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
   { "0x0521",    0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,            -1,    0  },
-  { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        1,    0  },
+  { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
   { "HDMI-A-1",  0.5,  1,      1.0,  &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
-  { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
+  { NULL,        0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
 };
 
 /* keyboard */
@@ -157,7 +157,7 @@ static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat",
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
-static const char *communicator[]    = { "discord", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", NULL};
+static const char *communicator[]    = { "/usr/bin/discord", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", NULL};
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
