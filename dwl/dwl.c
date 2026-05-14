@@ -3550,7 +3550,7 @@ void
 updatebar(Monitor *m)
 {
 	size_t i;
-	int rw, rh;
+	int rw, rh, min_phys_h;
 	char fontattrs[12];
 
 	wlr_output_transformed_resolution(m->wlr_output, &rw, &rh);
@@ -3573,10 +3573,12 @@ updatebar(Monitor *m)
 	if (!(drwl_font_create(m->drw, LENGTH(fonts), fonts, fontattrs)))
 		die("Could not load font");
 
-	m->b.scale = m->wlr_output->scale;
+	min_phys_h = m->drw->font->height + 2;
+
+  m->b.scale = m->wlr_output->scale;
 	m->lrpad = m->drw->font->height;
-	m->b.height = m->drw->font->height + 2;
-	m->b.real_height = (int)((float)m->b.height / m->wlr_output->scale);
+	m->b.real_height = (int)ceilf((float)min_phys_h / m->wlr_output->scale);
+	m->b.height = (int)roundf((float)m->b.real_height * m->wlr_output->scale);
 }
 
 void
