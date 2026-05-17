@@ -30,7 +30,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
-#define BROWSER "librewolf"
+#define BROWSER "zen-browser"
 
 static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
@@ -150,14 +150,14 @@ static const char *termcmd[]         = { "foot", NULL };
 static const char *menucmd[]         = { "bemenu-run", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { TERMINAL,"-T","email", "-e", "neomutt", NULL };
-static const char *notes[]           = { TERMINAL,"-T","notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
+static const char *notes[]           = { "obsidian", NULL};
 static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "lf", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
-static const char *communicator[]    = { "/usr/bin/discord", "--enable-features=UseOzonePlatform", "--ozone-platform=wayland", NULL};
+static const char *communicator[]    = { "discord", NULL};
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
