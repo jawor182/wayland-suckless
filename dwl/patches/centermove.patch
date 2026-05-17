@@ -1,0 +1,54 @@
+diff --git a/config.def.h b/config.def.h
+index 8a6eda0..231edaa 100644
+--- a/config.def.h
++++ b/config.def.h
+@@ -132,6 +132,7 @@ static const Key keys[] = {
+ 	{ MODKEY,                    XKB_KEY_Return,      zoom,             {0} },
+ 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
+ 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           killclient,       {0} },
++  { MODKEY,                    XKB_KEY_c,           centermove,       {0} },
+ 	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[0]} },
+ 	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[1]} },
+ 	{ MODKEY,                    XKB_KEY_m,           setlayout,        {.v = &layouts[2]} },
+diff --git a/dwl.c b/dwl.c
+index 101a45f..4e180ee 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -249,6 +249,7 @@ static void arrangelayer(Monitor *m, struct wl_list *list,
+ static void arrangelayers(Monitor *m);
+ static void axisnotify(struct wl_listener *listener, void *data);
+ static void buttonpress(struct wl_listener *listener, void *data);
++static void centermove(const Arg *arg);
+ static void chvt(const Arg *arg);
+ static void checkidleinhibitor(struct wlr_surface *exclude);
+ static void cleanup(void);
+@@ -673,6 +674,29 @@ buttonpress(struct wl_listener *listener, void *data)
+ 			event->time_msec, event->button, event->state);
+ }
+ 
++void
++centermove(const Arg *arg)
++{
++  Monitor *mon = selmon;
++  Client *c = focustop(selmon);
++
++	if (!c || !c->mon) {
++		return;
++	}
++
++	if (!c->isfloating) {
++		return;
++	}
++
++	resize(c, (struct wlr_box){
++		.x = (mon->m.width - c->geom.width) / 2 + mon->m.x,
++		.y = (mon->m.height - c->geom.height) / 2 + mon->m.y,
++		.width = c->geom.width,
++		.height = c->geom.height,
++	}, 1);
++
++}
++
+ void
+ chvt(const Arg *arg)
+ {

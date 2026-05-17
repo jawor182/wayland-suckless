@@ -300,6 +300,7 @@ static void bufdataend(struct wlr_buffer *buffer);
 static Buffer *bufmon(Monitor *m);
 static void bufrelease(struct wl_listener *listener, void *data);
 static void buttonpress(struct wl_listener *listener, void *data);
+static void centermove(const Arg *arg);
 static void chvt(const Arg *arg);
 static void checkidleinhibitor(struct wlr_surface *exclude);
 static void cleanup(void);
@@ -882,6 +883,29 @@ buttonpress(struct wl_listener *listener, void *data)
 	 * pointer focus that a button press has occurred */
 	wlr_seat_pointer_notify_button(seat,
 			event->time_msec, event->button, event->state);
+}
+
+void
+centermove(const Arg *arg)
+{
+  Monitor *mon = selmon;
+  Client *c = focustop(selmon);
+
+	if (!c || !c->mon) {
+		return;
+	}
+
+	if (!c->isfloating) {
+		return;
+	}
+
+	resize(c, (struct wlr_box){
+		.x = (mon->m.width - c->geom.width) / 2 + mon->m.x,
+		.y = (mon->m.height - c->geom.height) / 2 + mon->m.y,
+		.width = c->geom.width,
+		.height = c->geom.height,
+	}, 1);
+
 }
 
 void

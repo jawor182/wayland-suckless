@@ -187,6 +187,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_l,           setmfact,         {.f = +0.05f} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
+	{ MODKEY,                    XKB_KEY_c,           centermove,       {0} },
 	{ MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
   { MODKEY,                    XKB_KEY_w,           spawn,            {.v = browser } },
   { MODKEY,                    XKB_KEY_e,           spawn,            {.v = email } },
