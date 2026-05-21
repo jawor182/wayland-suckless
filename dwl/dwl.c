@@ -588,8 +588,8 @@ applyrules(Client *c)
 	}
 
 	if (mon) {
-		c->geom.x = (mon->w.width - c->geom.width) / 2 + mon->m.x;
-		c->geom.y = (mon->w.height - c->geom.height) / 2 + mon->m.y;
+		c->geom.x = (mon->m.width - c->geom.width) / 2 + mon->m.x;
+		c->geom.y = (mon->m.height - c->geom.height) / 2 + mon->m.y;
 	}
 
 	c->isfloating |= client_is_float_type(c);
@@ -3334,8 +3334,8 @@ togglescratch(const Arg *arg)
 			 * Uses monitor window area only, ignoring bars/gaps,
 			 * compatible with alwayscenter behavior.
 			 */
-			target->geom.x = (mon->w.width - target->geom.width) / 2 + mon->m.x;
-			target->geom.y = (mon->w.height - target->geom.height) / 2 + mon->m.y;
+			target->geom.x = (mon->m.width - target->geom.width) / 2 + mon->m.x;
+			target->geom.y = (mon->m.height - target->geom.height) / 2 + mon->m.y;
 
 			/* apply same geometry to swallowed children */
 			chain = target->swallowing;
