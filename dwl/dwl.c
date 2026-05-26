@@ -3243,13 +3243,13 @@ tile(Monitor *m)
 			resize(c, (struct wlr_box){.x = m->w.x + gappx*e, .y = m->w.y + my,
 				.width = mw - 2*gappx*e, .height = h}, 0);
 			my += c->geom.height + gappx*e;
-		} else {
-			r = n - i;
-			h = (m->w.height - ty - gappx*e - gappx*e * (r - 1)) / r;
-			resize(c, (struct wlr_box){.x = m->w.x + mw, .y = m->w.y + ty,
-				.width = m->w.width - mw - gappx*e, .height = h}, 0);
-			ty += c->geom.height + gappx*e;
-		}
+                } else {
+                        r = n - i;
+                        h = (m->w.height - ty - gappx*e - gappx*e * (r - 1)) / r;
+                        resize(c, (struct wlr_box){.x = m->w.x + (mw ? mw : gappx*e), .y = m->w.y + ty,
+                                .width = m->w.width - mw - (mw ? gappx*e : 2*gappx*e), .height = h}, 0);
+                        ty += c->geom.height + gappx*e;
+                }
 		i++;
 	}
 }
