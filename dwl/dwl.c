@@ -26,6 +26,8 @@
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_drm.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
+#include <wlr/types/wlr_ext_image_capture_source_v1.h>
+#include <wlr/types/wlr_ext_image_copy_capture_v1.h>
 #include <wlr/types/wlr_ext_data_control_v1.h>
 #include <wlr/types/wlr_fractional_scale_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
@@ -63,6 +65,8 @@
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/interfaces/wlr_buffer.h>
+#include <wlr/types/wlr_ext_image_capture_source_v1.h>
+#include <wlr/types/wlr_ext_foreign_toplevel_list_v1.h>
 #include <wlr/util/log.h>
 #include <wlr/util/region.h>
 #include <xkbcommon/xkbcommon.h>
@@ -74,6 +78,7 @@
 
 #include "util.h"
 #include "drwl.h"
+#include "xdg-shell-protocol.h"
 
 /* macros */
 #define MAX(A, B)               ((A) > (B) ? (A) : (B))
@@ -133,6 +138,13 @@ struct Client {
 	} surface;
 	struct wlr_xdg_toplevel_decoration_v1 *decoration;
 	struct wl_listener commit;
+    struct wlr_scene *image_capture_scene;
+    struct wlr_ext_image_capture_source_v1 *image_capture_source;
+    struct wlr_ext_foreign_toplevel_handle_v1 *ext_foreign_toplevel;
+    union {
+        struct wlr_scene_tree *image_capture_tree;
+        struct wlr_scene_surface *image_capture_scene_surface;
+    } capture;
 	struct wl_listener map;
 	struct wl_listener maximize;
 	struct wl_listener unmap;
@@ -447,6 +459,9 @@ static struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
 static struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
 static struct wlr_cursor_shape_manager_v1 *cursor_shape_mgr;
 static struct wlr_output_power_manager_v1 *power_mgr;
+static struct wlr_ext_foreign_toplevel_image_capture_source_manager_v1 *ext_foreign_toplevel_image_capture_source_manager_v1;
+static struct wl_listener new_foreign_toplevel_capture_request;
+static struct wlr_ext_foreign_toplevel_list_v1 *foreign_toplevel_list;
 
 static struct wlr_pointer_constraints_v1 *pointer_constraints;
 static struct wlr_relative_pointer_manager_v1 *relative_pointer_mgr;
@@ -1028,6 +1043,7 @@ cleanuplisteners(void)
 	wl_list_remove(&request_start_drag.link);
 	wl_list_remove(&start_drag.link);
 	wl_list_remove(&new_session_lock.link);
+    wl_list_remove(&new_foreign_toplevel_capture_request.link);
 #ifdef XWAYLAND
 	wl_list_remove(&new_xwayland_surface.link);
 	wl_list_remove(&xwayland_ready.link);
@@ -1525,6 +1541,7 @@ destroydecoration(struct wl_listener *listener, void *data)
 {
 	Client *c = wl_container_of(listener, c, destroy_decoration);
 
+    c->decoration = NULL;
 	wl_list_remove(&c->destroy_decoration.link);
 	wl_list_remove(&c->set_decoration_mode.link);
 }
@@ -2143,6 +2160,11 @@ mapnotify(struct wl_listener *listener, void *data)
 	Monitor *m;
 	int i;
 
+    struct wlr_ext_foreign_toplevel_handle_v1_state foreign_toplevel_state = {
+        .app_id = client_get_appid(c),
+        .title = client_get_title(c),
+    };
+
 	/* Create scene tree for this client and its border */
 	c->scene = client_surface(c)->data = wlr_scene_tree_create(layers[LyrTile]);
 	/* Enabled later by a call to arrange() */
@@ -2151,6 +2173,17 @@ mapnotify(struct wl_listener *listener, void *data)
 			? wlr_scene_xdg_surface_create(c->scene, c->surface.xdg)
 			: wlr_scene_subsurface_tree_create(c->scene, client_surface(c));
 	c->scene->node.data = c->scene_surface->node.data = c;
+
+    c->image_capture_scene = wlr_scene_create();
+    c->ext_foreign_toplevel = wlr_ext_foreign_toplevel_handle_v1_create(foreign_toplevel_list,&foreign_toplevel_state);
+    c->ext_foreign_toplevel->data = c;
+    if (c->type == XDGShell) {
+        c->capture.image_capture_tree = wlr_scene_xdg_surface_create(&c->image_capture_scene->tree, c->surface.xdg);
+#ifdef XWAYLAND
+    } else { /* xwayland */
+        c->capture.image_capture_scene_surface = wlr_scene_surface_create(&c->image_capture_scene->tree, c->surface.xwayland->surface);
+        #endif
+    }
 
 	client_get_geometry(c, &c->geom);
 
@@ -2541,24 +2574,12 @@ rendermon(struct wl_listener *listener, void *data)
 	/* This function is called every time an output is ready to display a frame,
 	 * generally at the output's refresh rate (e.g. 60Hz). */
 	Monitor *m = wl_container_of(listener, m, frame);
-	Client *c;
-	struct wlr_output_state pending = {0};
 	struct timespec now;
-
-	/* Render if no XDG clients have an outstanding resize and are visible on
-	 * this monitor. */
-	wl_list_for_each(c, &clients, link) {
-		if (c->resize && !c->isfloating && client_is_rendered_on_mon(c, m) && !client_is_stopped(c))
-			goto skip;
-	}
 
 	wlr_scene_output_commit(m->scene_output, NULL);
 
-skip:
-	/* Let clients know a frame has been rendered */
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	wlr_scene_output_send_frame_done(m->scene_output, &now);
-	wlr_output_state_finish(&pending);
 }
 
 void
@@ -2826,6 +2847,22 @@ setsel(struct wl_listener *listener, void *data)
 }
 
 void
+handle_new_foreign_toplevel_capture_request(struct wl_listener *listener, void *data) {
+    struct wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request *request = data;
+    Client *view = request->toplevel_handle->data;
+
+    if (view->image_capture_source == NULL) {
+        view->image_capture_source = wlr_ext_image_capture_source_v1_create_with_scene_node(
+            &view->image_capture_scene->tree.node, event_loop, alloc, drw);
+        if (view->image_capture_source == NULL) {
+            return;
+        }
+    }
+
+    wlr_ext_foreign_toplevel_image_capture_source_manager_v1_request_accept(request, view->image_capture_source);
+}
+
+void
 setup(void)
 {
 	int drm_fd, i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE};
@@ -2901,6 +2938,8 @@ setup(void)
 	wlr_data_device_manager_create(dpy);
 	wlr_export_dmabuf_manager_v1_create(dpy);
 	wlr_screencopy_manager_v1_create(dpy);
+    wlr_ext_image_copy_capture_manager_v1_create(dpy, 1);
+    wlr_ext_output_image_capture_source_manager_v1_create(dpy, 1);
 	wlr_data_control_manager_v1_create(dpy);
 	wlr_ext_data_control_manager_v1_create(dpy, 1);
 	wlr_primary_selection_v1_device_manager_create(dpy);
@@ -2957,6 +2996,10 @@ setup(void)
 	locked_bg = wlr_scene_rect_create(layers[LyrBlock], sgeom.width, sgeom.height,
 			(float [4]){0.1f, 0.1f, 0.1f, 1.0f});
 	wlr_scene_node_set_enabled(&locked_bg->node, 0);
+    foreign_toplevel_list =  wlr_ext_foreign_toplevel_list_v1_create(dpy,1);
+    ext_foreign_toplevel_image_capture_source_manager_v1 = wlr_ext_foreign_toplevel_image_capture_source_manager_v1_create(dpy, 1);
+    new_foreign_toplevel_capture_request.notify = handle_new_foreign_toplevel_capture_request;
+    wl_signal_add(&ext_foreign_toplevel_image_capture_source_manager_v1->events.new_request,&new_foreign_toplevel_capture_request);
 
 	/* Use decoration protocols to negotiate server-side decorations */
 	wlr_server_decoration_manager_set_default_mode(
@@ -3452,6 +3495,18 @@ unmapnotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->flink);
 	}
 
+    if (c->ext_foreign_toplevel != NULL) {
+        wlr_ext_foreign_toplevel_handle_v1_destroy(c->ext_foreign_toplevel);
+        c->ext_foreign_toplevel = NULL;
+    }
+#ifdef XWAYLAND
+    if (c->type != XDGShell && c->capture.image_capture_scene_surface) {
+        wlr_scene_node_destroy(&c->capture.image_capture_scene_surface->buffer->node);
+        c->capture.image_capture_scene_surface = NULL;
+    }
+#endif
+
+    wlr_scene_node_destroy(&c->image_capture_scene->tree.node);
 	wlr_scene_node_destroy(&c->scene->node);
 	drawbars();
 	motionnotify(0, NULL, 0, 0, 0, 0);
@@ -3611,6 +3666,13 @@ updatetitle(struct wl_listener *listener, void *data)
 	Client *c = wl_container_of(listener, c, set_title);
 	if (c == focustop(c->mon))
 		drawbars();
+    if (c->ext_foreign_toplevel != NULL) {
+        struct wlr_ext_foreign_toplevel_handle_v1_state foreign_toplevel_state = {
+            .app_id = client_get_appid(c),
+            .title = client_get_title(c),
+        };
+        wlr_ext_foreign_toplevel_handle_v1_update_state(c->ext_foreign_toplevel,&foreign_toplevel_state);
+    }
 }
 
 void
@@ -3888,11 +3950,9 @@ xwaylandready(struct wl_listener *listener, void *data)
 	wlr_xwayland_set_seat(xwayland, seat);
 
 	/* Set the default XWayland cursor to match the rest of dwl. */
-	if ((xcursor = wlr_xcursor_manager_get_xcursor(cursor_mgr, "default", 1)))
-		wlr_xwayland_set_cursor(xwayland,
-				xcursor->images[0]->buffer, xcursor->images[0]->width * 4,
-				xcursor->images[0]->width, xcursor->images[0]->height,
-				xcursor->images[0]->hotspot_x, xcursor->images[0]->hotspot_y);
+    if ((xcursor = wlr_xcursor_manager_get_xcursor(cursor_mgr, "default", 1)))
+        wlr_xwayland_set_cursor(xwayland, wlr_xcursor_image_get_buffer(xcursor->images[0]),
+                                xcursor->images[0]->hotspot_x, xcursor->images[0]->hotspot_y);
 }
 #endif
 
