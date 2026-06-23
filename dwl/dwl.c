@@ -196,8 +196,6 @@ typedef struct {
 	unsigned int type; /* LayerShell */
 
 	Monitor *mon;
- 	char *output;
- 	struct wlr_box floatgeom; /* saved geom for floating restore after monitor reconnect */
 	struct wlr_scene_tree *scene;
 	struct wlr_scene_tree *popups;
 	struct wlr_scene_layer_surface_v1 *scene_layer;
@@ -877,12 +875,12 @@ buttonpress(struct wl_listener *listener, void *data)
 		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
 		for (b = buttons; b < END(buttons); b++) {
 			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
+				b->func(click == ClkTagBar && b->arg.i == 0 ? &arg : &b->arg);
 				if (passthrough) {
 					if (b->func != togglepassthrough) continue;
 					b->func(&b->arg);
 					break;
 				}
-				b->func(click == ClkTagBar && b->arg.i == 0 ? &arg : &b->arg);
 				return;
 			}
 		}
@@ -1077,13 +1075,6 @@ closemon(Monitor *m)
 	}
 
 	wl_list_for_each(c, &clients, link) {
-
- 		/* Save floating geom now, before destroymon modifies it below.
- 		 * destroymon subtracts m->w.width from c->geom.x for floating
- 		 * windows, which corrupts the layout-absolute position we need
- 		 * to restore on reconnect. */
-    if (c->isfloating && c->mon == m) c->floatgeom = c->geom;
-
 		if (c->isfloating && c->geom.x > m->m.width)
 			resize(c, (struct wlr_box){.x = c->geom.x - m->w.width, .y = c->geom.y,
 					.width = c->geom.width, .height = c->geom.height}, 0);
@@ -3554,7 +3545,6 @@ updatemons(struct wl_listener *listener, void *data)
 	Client *c;
 	struct wlr_output_configuration_head_v1 *config_head;
 	Monitor *m;
- 	Client *c;
 
 	/* First remove from the layout the disabled monitors */
 	wl_list_for_each(m, &mons, link) {
