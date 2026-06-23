@@ -15,6 +15,8 @@ static const int topbar                    = 1; /* 0 means bottom bar */
 static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","NotoColorEmoji:size=14"};
 static const float rootcolor[]             = COLOR(0x000000ff);
+static const char *cursor_theme            = "breeze_cursors";
+static const char cursor_size[]            = "24"; /* Make sure it's a valid integer, otherwise things will break */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 static uint32_t colors[][3]                = {
 	/*               fg          bg          border    */
@@ -31,6 +33,9 @@ static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
 #define BROWSER "helium-browser"
+
+/* passthrough */
+static int passthrough = 0;
 
 static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
@@ -246,6 +251,7 @@ static const Key keys[] = {
 	TAGKEYS(          XKB_KEY_7, XKB_KEY_ampersand,                     6),
 	TAGKEYS(          XKB_KEY_8, XKB_KEY_asterisk,                      7),
 	TAGKEYS(          XKB_KEY_9, XKB_KEY_parenleft,                     8),
+	{ MODKEY,                    XKB_KEY_F11,         togglepassthrough,{0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_q,           quit,             {0} },
 
 	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */

@@ -123,10 +123,18 @@ int getstatus(char *str, char *last)
 
 void pstdout()
 {
-	if (!getstatus(statusstr[0], statusstr[1]))//Only write out if text has changed.
-		return;
-	printf("%s\n",statusstr[0]);
-	fflush(stdout);
+	// Build the status string, but ignore the return value 
+	// so we don't return early if the text hasn't changed.
+	getstatus(statusstr[0], statusstr[1]);
+	
+	// Unconditionally print to stdout
+	printf("%s\n", statusstr[0]);
+	
+	// Flush stdout and immediately check for a broken pipe
+	if (fflush(stdout) == EOF || ferror(stdout)) {
+		statusContinue = 0;
+		exit(1);
+	}
 }
 
 
