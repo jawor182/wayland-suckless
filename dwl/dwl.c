@@ -411,8 +411,8 @@ static void togglefloating(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void togglepassthrough(const Arg *arg);
 static void togglescratch(const Arg *arg);
-static void togglegaps(const Arg *arg);
 static void toggletag(const Arg *arg);
+static void togglegaps(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unlocksession(struct wl_listener *listener, void *data);
 static void unmaplayersurfacenotify(struct wl_listener *listener, void *data);
@@ -1327,9 +1327,9 @@ createmon(struct wl_listener *listener, void *data)
 
 	wlr_output_state_init(&state);
 	/* Initialize monitor state using configured rules */
-	m->gaps = gaps;
-
 	m->tagset[0] = m->tagset[1] = 1;
+    m->gaps = gaps;
+
 	for (r = monrules; r < END(monrules); r++) {
 		if (!r->name || strstr(wlr_output->name, r->name)) {
 			m->m.x = r->x;
@@ -2282,8 +2282,12 @@ monocle(Monitor *m)
 	wl_list_for_each(c, &clients, link) {
 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
 			continue;
-		resize(c, m->w, 0);
 		n++;
+        if (!monoclegaps)
+			resize(c, m->w, 0);
+		else
+			resize(c, (struct wlr_box){.x = m->w.x + gappx, .y = m->w.y + gappx,
+				.width = m->w.width - 2 * gappx, .height = m->w.height - 2 * gappx}, 0);
 	}
 	if (n)
 		snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[%d]", n);
@@ -3336,13 +3340,6 @@ togglefullscreen(const Arg *arg)
 }
 
 void
-togglegaps(const Arg *arg)
-{
-	selmon->gaps = !selmon->gaps;
-	arrange(selmon);
-}
-
-void
 togglescratch(const Arg *arg)
 {
 	Client *c, *target = NULL, *chain = NULL;
@@ -3415,6 +3412,14 @@ togglepassthrough(const Arg *arg)
 {
 	passthrough = !passthrough;
 }
+
+void
+togglegaps(const Arg *arg)
+{
+	selmon->gaps = !selmon->gaps;
+	arrange(selmon);
+}
+
 
 void
 toggletag(const Arg *arg)

@@ -6,10 +6,11 @@
 /* appearance */
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
-static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
-static int gaps                            = 1;  /* 1 means gaps between windows are added */
-static const unsigned int gappx            = 8; /* gap pixel between windows */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
+static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
+static const int monoclegaps               = 1;  /* 1 means gaps in monocle layout */
+static int gaps                            = 1;  /* 1 means gaps between windows are added */
+static const unsigned int gappx            = 8;  /* gap pixel between windows */
 static const int showbar                   = 1; /* 0 means no bar */
 static const int topbar                    = 1; /* 0 means bottom bar */
 static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
@@ -32,7 +33,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
-#define BROWSER "helium-browser"
+#define BROWSER "librewolf"
 
 /* passthrough */
 static int passthrough = 0;
@@ -193,7 +194,7 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
 	{ MODKEY,                    XKB_KEY_c,           centermove,       {0} },
-	{ MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
+    { MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
     { MODKEY,                    XKB_KEY_w,           spawn,            {.v = browser } },
     { MODKEY,                    XKB_KEY_e,           spawn,            {.v = email } },
     { MODKEY,                    XKB_KEY_n,           spawn,            {.v = notes } },
