@@ -16,8 +16,6 @@ static const int topbar                    = 1; /* 0 means bottom bar */
 static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
 static const char *fonts[]                 = {"JetBrainsMonoNerdFont:size=16","NotoColorEmoji:size=14"};
 static const float rootcolor[]             = COLOR(0x000000ff);
-static const char *cursor_theme            = "breeze_cursors";
-static const char cursor_size[]            = "24"; /* Make sure it's a valid integer, otherwise things will break */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 static uint32_t colors[][3]                = {
 	/*               fg          bg          border    */

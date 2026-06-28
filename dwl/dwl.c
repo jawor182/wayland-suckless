@@ -2878,6 +2878,8 @@ void
 setup(void)
 {
 	int drm_fd, i, sig[] = {SIGCHLD, SIGINT, SIGTERM, SIGPIPE};
+    int size;
+    char *curtheme, *cursize;
 	struct sigaction sa = {.sa_flags = SA_RESTART, .sa_handler = handlesig};
 	sigemptyset(&sa.sa_mask);
 
@@ -3036,12 +3038,17 @@ setup(void)
 	 * Xcursor themes to source cursor images from and makes sure that cursor
 	 * images are available at all scale factors on the screen (necessary for
 	 * HiDPI support). Scaled cursors will be loaded with each output. */
-	cursor_mgr = wlr_xcursor_manager_create(cursor_theme, atoi(cursor_size));
-	setenv("XCURSOR_SIZE", cursor_size, 1);
-	if (cursor_theme)
-		setenv("XCURSOR_THEME", cursor_theme, 1);
-	else
-		unsetenv("XCURSOR_THEME");
+    curtheme = getenv("XCURSOR_THEME");
+    cursize = getenv("XCURSOR_SIZE");
+    size = 24;
+    if (!curtheme){
+        curtheme = "Adwaita";
+    }
+    if (cursize){
+        size = atoi(cursize);
+    }
+
+	cursor_mgr = wlr_xcursor_manager_create(curtheme, size);
 
 	/*
 	 * wlr_cursor *only* displays an image on screen. It does not move around
