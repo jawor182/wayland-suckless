@@ -31,7 +31,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
-#define BROWSER "librewolf"
+#define BROWSER "helium-browser"
 
 /* passthrough */
 static int passthrough = 0;
@@ -46,7 +46,7 @@ static const Rule rules[] = {
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
-    { NULL,                          "news",            1 << 4,       0,            0,          1,          1,       0    },
+    { TERMINAL,                      "news",            1 << 4,       0,            0,          1,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
@@ -151,17 +151,17 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 
 /* commands */
 static const char *termcmd[]         = { "foot", NULL };
-static const char *menucmd[]         = { "bemenu-run", NULL };
+static const char *menucmd[]         = { "rofi", "-show", "drun", "-show-icons", NULL };
 static const char *browser[]         = { BROWSER, NULL };
-static const char *email[]           = { TERMINAL,"-T","email", "-e", "neomutt", NULL };
-static const char *notes[]           = { TERMINAL, "-T", "notes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL,"-T","files", "-e", "lf", NULL };
+static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt", NULL };
+static const char *notes[]           = { TERMINAL, "-T", "notes", "-e", "sh", "-c", "cd ~/dox/notes && $EDITOR", NULL};
+static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
+static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
-static const char *news[]            = { TERMINAL,"-T","news", "-e", "newsboat", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
-static const char *communicator[]    = { "discord", NULL};
+static const char *communicator[]    = { "env", "ELECTRON_OZONE_PLATFORM_HINT=", "/usr/bin/discord", NULL};
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
@@ -169,6 +169,11 @@ static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","ncmpcpp"
 static const char *spcal[]      = {"c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
 static const char *spcalc[]     = {"C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
 static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
+
+#define ADDPASSRULE(S, K) {.appid = S, .len = LENGTH(S), .key = K}
+static const PassKeypressRule pass_rules[] = {
+	ADDPASSRULE("discord", XKB_KEY_F9),
+};
 
 static const Key keys[] = {
 	/* Note that Shift changes certain key codes: 2 -> at, etc. */
@@ -210,10 +215,10 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,           spawn,            SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_M,           spawn,            SHCMD("mpvq play") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_A,           spawn,            SHCMD("mpvq addclip") },
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_asciitilde,  spawn,            SHCMD("bemenubookmarks select_browser") },
-    { MODKEY,                    XKB_KEY_grave,       spawn,            SHCMD("bemenubookmarks select") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,           spawn,            SHCMD("bemenubookmarks add") },
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,           spawn,            SHCMD("bemenuunicode") },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_asciitilde,  spawn,            SHCMD("rofibookmarks select_browser") },
+    { MODKEY,                    XKB_KEY_grave,       spawn,            SHCMD("rofibookmarks select") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,           spawn,            SHCMD("rofibookmarks add") },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,           spawn,            SHCMD("rofiunicode") },
     { 0,                         XKB_KEY_Print,       spawn,            SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,           spawn,            SHCMD("mpc toggle && pkill -RTMIN+3 someblocks") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,      spawn,            SHCMD("mpc next && pkill -RTMIN+3 someblocks") },
