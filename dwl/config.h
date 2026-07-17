@@ -157,6 +157,7 @@ static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt
 static const char *notes[]           = { TERMINAL, "-T", "notes", "-e", "sh", "-c", "cd ~/dox/notes && $EDITOR", NULL};
 static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
+static const char *sounds[]          = { TERMINAL, "-e", "pulsemixer", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
@@ -208,6 +209,7 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,           spawn,            {.v = books } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,           spawn,            {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,      spawn,            {.v = lockscreen } },
+    { MODKEY,                    XKB_KEY_s,           spawn,            {.v = sounds } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Escape,      spawn,            SHCMD("powermenu")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,           spawn,            SHCMD("colorpicker")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_W,           spawn,            SHCMD("wallpaper open")},
