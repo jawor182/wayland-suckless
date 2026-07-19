@@ -75,11 +75,11 @@ static const Layout layouts[] = {
  * WARNING: negative values other than (-1, -1) cause problems with Xwayland clients due to
  * https://gitlab.freedesktop.org/xorg/xserver/-/issues/899 */
 static const MonitorRule monrules[] = {
-  /* name       mfact nmaster scale layout       rotate/reflect               x       y       resx    resy    rate            mode  adaptive  */
-  { "eDP-1",     0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,             0,    0  },
-  { "DP-1",      0.5,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
-  { "HDMI-A-1",  0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
-  { NULL,        0.5,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    1  },
+  /* name        mfact   nmaster scale layout       rotate/reflect              x       y       resx    resy    rate             mode  adaptive  */
+  { "eDP-1",     0.55f,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,             0,    0  },
+  { "DP-1",      0.55f,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
+  { "HDMI-A-1",  0.55f,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
+  { NULL,        0.55f,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    0  },
 };
 
 /* keyboard */
@@ -157,7 +157,7 @@ static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt
 static const char *notes[]           = { TERMINAL, "-T", "notes", "-e", "sh", "-c", "cd ~/dox/notes && $EDITOR", NULL};
 static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
-static const char *sounds[]          = { TERMINAL, "-e", "pulsemixer", NULL };
+static const char *sounds[]          = { TERMINAL, "-T", "floatingterm", "-e", "pulsemixer", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *books[]           = { "calibre", NULL };
