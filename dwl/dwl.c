@@ -122,6 +122,8 @@ struct Client {
 	unsigned int type; /* XDGShell or X11* */
 
 	Monitor *mon;
+ 	char *output;
+ 	struct wlr_box floatgeom; /* saved geom for floating restore after monitor reconnect */
 	struct wlr_scene_tree *scene;
 	struct wlr_scene_rect *border[4]; /* top, bottom, left, right */
 	struct wlr_scene_tree *scene_surface;
@@ -1063,6 +1065,13 @@ closemon(Monitor *m)
 	}
 
 	wl_list_for_each(c, &clients, link) {
+
+ 		/* Save floating geom now, before destroymon modifies it below.
+ 		 * destroymon subtracts m->w.width from c->geom.x for floating
+ 		 * windows, which corrupts the layout-absolute position we need
+ 		 * to restore on reconnect. */
+    if (c->isfloating && c->mon == m) c->floatgeom = c->geom;
+
 		if (c->isfloating && c->geom.x > m->m.width)
 			resize(c, (struct wlr_box){.x = c->geom.x - m->w.width, .y = c->geom.y,
 					.width = c->geom.width, .height = c->geom.height}, 0);
@@ -1302,6 +1311,7 @@ createmon(struct wl_listener *listener, void *data)
 	size_t i;
 	struct wlr_output_state state;
 	Monitor *m;
+ 	Client *c;
 
 	if (!wlr_output_init_render(wlr_output, alloc, drw))
 		return;
@@ -1387,6 +1397,21 @@ createmon(struct wl_listener *listener, void *data)
 		wlr_output_layout_add_auto(output_layout, wlr_output);
 	else
 		wlr_output_layout_add(output_layout, wlr_output, m->m.x, m->m.y);
+ 
+  wl_list_for_each(c, &clients, link) {
+      if (!c->output || strcmp(wlr_output->name, c->output) != 0)
+          continue;
+      c->mon = m;
+      if (c->isfloating) {
+          resize(c, (struct wlr_box){
+                  .x = m->m.x + (m->m.width  - c->geom.width) / 2,
+                  .y = m->m.y + (m->m.height - c->geom.height) / 2,
+                  .width = c->geom.width,
+                  .height = c->geom.height,
+                  }, 1);
+      }
+  }
+  updatemons(NULL, NULL);
 }
 
 void
@@ -1621,7 +1646,8 @@ destroynotify(struct wl_listener *listener, void *data)
 		wl_list_remove(&c->unmap.link);
 		wl_list_remove(&c->maximize.link);
 	}
-	free(c);
+ 	free(c->output);
+  free(c);
 }
 
 void
@@ -2260,6 +2286,9 @@ mapnotify(struct wl_listener *listener, void *data)
 	} else {
 		applyrules(c);
 	}
+ 	c->output = strdup(c->mon->wlr_output->name);
+ 	if (c->output == NULL) die("oom");
+
 	drawbars();
 
 unset_fullscreen:
@@ -3254,8 +3283,12 @@ void
 tagmon(const Arg *arg)
 {
 	Client *sel = focustop(selmon);
-	if (sel)
-		setmon(sel, dirtomon(arg->i), 0);
+ 	if (!sel) return;
+
+ 	setmon(sel, dirtomon(arg->i), 0);
+ 	free(sel->output);
+ 	sel->output = strdup(sel->mon->wlr_output->name);
+ 	if (sel->output == NULL) die("oom");
 }
 
 Client *

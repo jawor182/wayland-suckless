@@ -21,7 +21,7 @@ static uint32_t colors[][3]                = {
 	/*               fg          bg          border    */
 	[SchemeNorm] = { 0xebdbb2ff, 0x282828ff, 0x928374ff },
 	[SchemeSel]  = { 0x282828ff, 0xd65d0eff, 0xd65d0eff },
-	[SchemeUrg]  = { 0,          0,          0xfb4934ff },
+	[SchemeUrg]  = { 0,          0xfb4934ff, 0xfb4934ff },
 };
 
 /* tagging */
@@ -79,7 +79,7 @@ static const MonitorRule monrules[] = {
   { "eDP-1",     0.55f,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      0,      0,      60 ,             0,    0  },
   { "DP-1",      0.55f,  1,      1.25, &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 1920,   0,      2560,   1440,   165.001f,        0,    0  },
   { "HDMI-A-1",  0.55f,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL, 0,      0,      1920,   1080,   74.973f,         1,    0  },
-  { NULL,        0.55f,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            0,    0  },
+  { NULL,        0.55f,  1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,-1,     -1,      0,      0,      0.0f,            1,    1  },
 };
 
 /* keyboard */
@@ -160,7 +160,6 @@ static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat
 static const char *sounds[]          = { TERMINAL, "-T", "floatingterm", "-e", "pulsemixer", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
-static const char *books[]           = { "calibre", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
 static const char *communicator[]    = { "env", "ELECTRON_OZONE_PLATFORM_HINT=", "/usr/bin/discord", NULL};
 
@@ -206,7 +205,6 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_f,           spawn,            {.v = guiFileManager } },
     { MODKEY,                    XKB_KEY_p,           spawn,            {.v = passwords } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,           spawn,            {.v = news } },
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_B,           spawn,            {.v = books } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,           spawn,            {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,      spawn,            {.v = lockscreen } },
     { MODKEY,                    XKB_KEY_s,           spawn,            {.v = sounds } },
