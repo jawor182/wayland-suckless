@@ -40,19 +40,23 @@ static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
     { "mpvq",                        NULL,              0,            0,            0,          0,          0,       0    },
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
-    { "org.mozilla.Thunderbird",     NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "eu.betterbird.Betterbird",    NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "orca-slicer",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
+    { "org.freecad.FreeCAD",         NULL,              1 << 6,       0,            0,          0,          1,       0    },
     { "steam",                       "Steam",           1 << 2,       0,            0,          0,          0,       0    },
     { "discord",                     NULL,              1 << 3,       0,            0,          0,          0,       0    },
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
     { TERMINAL,                      "news",            1 << 4,       0,            0,          1,          1,       0    },
-    { TERMINAL,                      NULL,              0,            0,            1,          0,         -1,       0    },
+    { TERMINAL,                      "notes",           1 << 5,       0,            0,          1,          1,       0    },
+    { TERMINAL,                      NULL,              0,            0,            1,          1,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
     { NULL,                          "Event Tester",    0,            0,            0,          1,         -1,       0    },
     { "wev",                         NULL,              0,            0,            0,          1,         -1,       0    },
     { "xdg-desktop-portal",          NULL,              0,            1,            0,          0,         -1,       0    },
+    { "FreeCAD",                     "Open document",   0,            1,            0,          0,         -1,       0    },
     { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
     { NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
     { NULL,                          "spmusic",         0,            1,            0,          1,         -1,      'm'   },
@@ -153,22 +157,21 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 static const char *termcmd[]         = { "foot", NULL };
 static const char *menucmd[]         = { "rofi", "-show", "drun", "-show-icons", NULL };
 static const char *browser[]         = { BROWSER, NULL };
-static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt", NULL };
+static const char *email[]           = { "betterbird", NULL };
 static const char *notes[]           = { TERMINAL, "-T", "notes", "-e", "sh", "-c", "cd ~/dox/notes && $EDITOR", NULL};
-static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
+static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "yazi", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
-static const char *sounds[]          = { TERMINAL, "-T", "floatingterm", "-e", "pulsemixer", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
 static const char *communicator[]    = { "env", "ELECTRON_OZONE_PLATFORM_HINT=", "/usr/bin/discord", NULL};
 
 /* First arg only serves to match against key in rules*/
-static const char *spterm[]     = {"t", TERMINAL, "-T", "spterm", NULL};
-static const char *spmusic[]    = {"m", TERMINAL, "-T", "spmusic","-e","ncmpcpp", NULL};
-static const char *spcal[]      = {"c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
-static const char *spcalc[]     = {"C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
-static const char *spnotes[]    = {"n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
+static const char *spterm[]     = { "t", TERMINAL, "-T", "spterm", NULL};
+static const char *spmusic[]    = { "m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
+static const char *spcal[]      = { "c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
+static const char *spcalc[]     = { "C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
+static const char *spnotes[]    = { "n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 
 #define ADDPASSRULE(S, K) {.appid = S, .len = LENGTH(S), .key = K}
 static const PassKeypressRule pass_rules[] = {
@@ -179,9 +182,10 @@ static const Key keys[] = {
 	/* Note that Shift changes certain key codes: 2 -> at, etc. */
 	/* modifier                  key                  function          argument */
 	{ MODKEY,                    XKB_KEY_d,           spawn,            {.v = menucmd} },
+	{ MODKEY,                    XKB_KEY_r,           spawn,            SHCMD("rofi -show run")},
 	{ MODKEY,                    XKB_KEY_Return,      spawn,            {.v = termcmd} },
 	{ MODKEY,                    XKB_KEY_b,           togglebar,        {0} },
-    { MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_Return,      togglescratch,    {.v = spterm } },
+    { MODKEY,                    XKB_KEY_s,           togglescratch,    {.v = spterm } },
 	{ MODKEY,                    XKB_KEY_m,           togglescratch,    {.v = spmusic } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,           togglescratch,    {.v = spcal } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,           togglescratch,    {.v = spcalc } },
@@ -207,9 +211,8 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,           spawn,            {.v = news } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,           spawn,            {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,      spawn,            {.v = lockscreen } },
-    { MODKEY,                    XKB_KEY_s,           spawn,            {.v = sounds } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Escape,      spawn,            SHCMD("powermenu")},
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,           spawn,            SHCMD("colorpicker")},
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,           spawn,            SHCMD("hyprpicker -an")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_W,           spawn,            SHCMD("wallpaper open")},
     { MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_w,           spawn,            SHCMD("wallpaper random") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,           spawn,            SHCMD("screenshot") },
@@ -221,12 +224,12 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,           spawn,            SHCMD("rofiunicode") },
     { 0,                         XKB_KEY_Print,       spawn,            SHCMD("screenshot") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,           spawn,            SHCMD("mpc toggle && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_n,           spawn,            SHCMD("~/dotfiles/.config/rmpc/rmpc-notifier") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,      spawn,            SHCMD("mpc next && pkill -RTMIN+3 someblocks") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,       spawn,            SHCMD("mpc prev && pkill -RTMIN+3 someblocks") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,       spawn,            SHCMD("mpc volume +5") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,       spawn,            SHCMD("mpc volume -5") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,           spawn,            SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_0,           spawn,            SHCMD("mpc seek 0 && pkill -RTMIN+3 someblocks") },
     { 0,                         XKB_KEY_XF86AudioMute,                 spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+9 someblocks") },
     { 0,                         XKB_KEY_XF86AudioLowerVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+9 someblocks"   ) },
     { 0,                         XKB_KEY_XF86AudioRaiseVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+9 someblocks"   ) },
@@ -235,10 +238,9 @@ static const Key keys[] = {
     { 0,                         XKB_KEY_XF86AudioPrev,                 spawn,   SHCMD("playerctl previous") },
 	{ MODKEY,                    XKB_KEY_q,           killclient,       {0} },
 	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[0]} },
-	{ MODKEY,                    XKB_KEY_v,           setlayout,        {.v = &layouts[1]} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_V,           setlayout,        {.v = &layouts[1]} },
 	{ MODKEY,                    XKB_KEY_y,           setlayout,        {.v = &layouts[2]} },
-	{ MODKEY,                    XKB_KEY_space,       setlayout,        {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
+	{ MODKEY,                    XKB_KEY_v,           togglefloating,   {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_F,           togglefullscreen, {0} },
 	{ MODKEY,                    XKB_KEY_0,           view,             {.ui = ~0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_parenright,  tag,              {.ui = ~0} },
