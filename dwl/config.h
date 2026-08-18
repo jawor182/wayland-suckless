@@ -49,7 +49,6 @@ static const Rule rules[] = {
     { "calibre-gui",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { NULL,                          "email",           1 << 2,       0,            0,          1,          1,       0    },
     { TERMINAL,                      "news",            1 << 4,       0,            0,          1,          1,       0    },
-    { TERMINAL,                      "notes",           1 << 5,       0,            0,          1,          1,       0    },
     { TERMINAL,                      NULL,              0,            0,            1,          1,         -1,       0    },
     { NULL,                          "floatingterm",    0,            1,            1,          0,         -1,       0    },
     { "Ghostscript",                 NULL,              0,            0,            0,          1,         -1,       0    },
@@ -158,7 +157,6 @@ static const char *termcmd[]         = { "foot", NULL };
 static const char *menucmd[]         = { "rofi", "-show", "drun", "-show-icons", NULL };
 static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { "betterbird", NULL };
-static const char *notes[]           = { TERMINAL, "-T", "notes", "-e", "sh", "-c", "cd ~/dox/notes && $EDITOR", NULL};
 static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "yazi", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
@@ -189,7 +187,7 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_m,           togglescratch,    {.v = spmusic } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,           togglescratch,    {.v = spcal } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,           togglescratch,    {.v = spcalc } },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_n,           togglescratch,    {.v = spnotes } },
+	{ MODKEY,                    XKB_KEY_n,           togglescratch,    {.v = spnotes } },
 	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,           rotate_clients,   {.i = -1} },
@@ -204,7 +202,6 @@ static const Key keys[] = {
     { MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
     { MODKEY,                    XKB_KEY_w,           spawn,            {.v = browser } },
     { MODKEY,                    XKB_KEY_e,           spawn,            {.v = email } },
-    { MODKEY,                    XKB_KEY_n,           spawn,            {.v = notes } },
     { MODKEY,                    XKB_KEY_f,           spawn,            {.v = fileManager } },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_f,           spawn,            {.v = guiFileManager } },
     { MODKEY,                    XKB_KEY_p,           spawn,            {.v = passwords } },
