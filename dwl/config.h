@@ -7,8 +7,8 @@
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
-static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
-static const int monoclegaps               = 1;  /* 1 means gaps in monocle layout */
+static const int smartgaps                 = 1;  /* 1 means no outer gap when there is only one window */
+static const int monoclegaps               = 0;  /* 1 means gaps in monocle layout */
 static int gaps                            = 1;  /* 1 means gaps between windows are added */
 static const unsigned int gappx            = 8;  /* gap pixel between windows */
 static const int showbar                   = 1; /* 0 means no bar */
@@ -31,7 +31,7 @@ static char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int log_level = WLR_DEBUG;
 
 #define TERMINAL "foot"
-#define BROWSER "helium-browser"
+#define BROWSER "librewolf"
 
 /* passthrough */
 static int passthrough = 0;
@@ -40,7 +40,7 @@ static const Rule rules[] = {
     /* app_id                        title              tags mask     isfloating    isterm      noswallow   monitor  scratchkey */
     { "mpvq",                        NULL,              0,            0,            0,          0,          0,       0    },
     { "KeePassXC",                   NULL,              1 << 8,       0,            0,          0,          1,       0    },
-    { "eu.betterbird.Betterbird",    NULL,              1 << 2,       0,            0,          0,          1,       0    },
+    { "md.obsidian.Obsidian",        NULL,              1 << 5,       0,            0,          0,          1,       0    },
     { "orca-slicer",                 NULL,              1 << 3,       0,            0,          0,          1,       0    },
     { "qBittorrent",                 NULL,              1 << 6,       0,            0,          0,          1,       0    },
     { "org.freecad.FreeCAD",         NULL,              1 << 6,       0,            0,          0,          1,       0    },
@@ -61,7 +61,6 @@ static const Rule rules[] = {
     { NULL,                          "spmusic",         0,            1,            0,          1,         -1,      'm'   },
     { NULL,                          "spcal",           0,            1,            0,          1,         -1,      'c'   },
     { NULL,                          "spcalc",          0,            1,            0,          1,         -1,      'C'   },
-    { NULL,                          "spnotes",         0,            1,            0,          1,         -1,      'n'   },
 
 };
 
@@ -156,20 +155,20 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 static const char *termcmd[]         = { "foot", NULL };
 static const char *menucmd[]         = { "rofi", "-show", "drun", "-show-icons", NULL };
 static const char *browser[]         = { BROWSER, NULL };
-static const char *email[]           = { "betterbird", NULL };
-static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "yazi", NULL };
+static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt", NULL };
+static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsboat", NULL };
+static const char *notes[]           = { "obsidian", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
-static const char *communicator[]    = { "env", "ELECTRON_OZONE_PLATFORM_HINT=", "/usr/bin/discord", NULL};
+static const char *communicator[]    = { "discord", "--ozone-platform=x11", NULL};
 
 /* First arg only serves to match against key in rules*/
 static const char *spterm[]     = { "t", TERMINAL, "-T", "spterm", NULL};
 static const char *spmusic[]    = { "m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
 static const char *spcal[]      = { "c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
 static const char *spcalc[]     = { "C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
-static const char *spnotes[]    = { "n", TERMINAL, "-T", "spnotes","-e","sh","-c","cd ~/dox/notes && $EDITOR", NULL};
 
 #define ADDPASSRULE(S, K) {.appid = S, .len = LENGTH(S), .key = K}
 static const PassKeypressRule pass_rules[] = {
@@ -187,7 +186,6 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_m,           togglescratch,    {.v = spmusic } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,           togglescratch,    {.v = spcal } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,           togglescratch,    {.v = spcalc } },
-	{ MODKEY,                    XKB_KEY_n,           togglescratch,    {.v = spnotes } },
 	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,           rotate_clients,   {.i = -1} },
@@ -199,17 +197,18 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
 	{ MODKEY,                    XKB_KEY_c,           centermove,       {0} },
-    { MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
+	{ MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
     { MODKEY,                    XKB_KEY_w,           spawn,            {.v = browser } },
     { MODKEY,                    XKB_KEY_e,           spawn,            {.v = email } },
     { MODKEY,                    XKB_KEY_f,           spawn,            {.v = fileManager } },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_f,           spawn,            {.v = guiFileManager } },
     { MODKEY,                    XKB_KEY_p,           spawn,            {.v = passwords } },
+    { MODKEY,                    XKB_KEY_n,           spawn,            {.v = notes } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,           spawn,            {.v = news } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,           spawn,            {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,      spawn,            {.v = lockscreen } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Escape,      spawn,            SHCMD("powermenu")},
-    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,           spawn,            SHCMD("hyprpicker -an")},
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_P,           spawn,            SHCMD("hyprpicker -a")},
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_W,           spawn,            SHCMD("wallpaper open")},
     { MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_w,           spawn,            SHCMD("wallpaper random") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_S,           spawn,            SHCMD("screenshot") },
