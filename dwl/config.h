@@ -7,11 +7,10 @@
 static const int sloppyfocus               = 1;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static const unsigned int borderpx         = 4;  /* border pixel of windows */
-static const int smartgaps                 = 0;  /* 1 means no outer gap when there is only one window */
-static const unsigned int gappih           = 10; /* horiz inner gap between windows */
-static const unsigned int gappiv           = 10; /* vert inner gap between windows */
-static const unsigned int gappoh           = 10; /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov           = 10; /* vert outer gap between windows and screen edge */
+static const int smartgaps                 = 1;  /* 1 means no outer gap when there is only one window */
+static const int monoclegaps               = 0;  /* 1 means gaps in monocle layout */
+static int gaps                            = 1;  /* 1 means gaps between windows are added */
+static const unsigned int gappx            = 8;  /* gap pixel between windows */
 static const int showbar                   = 1; /* 0 means no bar */
 static const int topbar                    = 1; /* 0 means bottom bar */
 static float swallowborder                 = 0.0f; /* add this multiplied by borderpx to border when a client is swallowed */
@@ -189,8 +188,8 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,           togglescratch,    {.v = spcalc } },
 	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,           relativeswap,     {.i = +1} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_K,           relativeswap,     {.i = -1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,          relativeswap,   {.i = +1} },
+	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_K,          relativeswap,   {.i = -1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_I,           incnmaster,       {.i = +1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_D,           incnmaster,       {.i = -1} },
 	{ MODKEY,                    XKB_KEY_h,           setmfact,         {.f = -0.05f} },
@@ -198,14 +197,7 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
 	{ MODKEY,                    XKB_KEY_c,           centermove,       {0} },
-	{ MODKEY,                    XKB_KEY_z,           incgaps,          {.i = +1 } },
-	{ MODKEY,                    XKB_KEY_x,           incgaps,          {.i = -1 } },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Z,           incogaps,         {.i = +1 } },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_X,           incogaps,         {.i = -1 } },
-	{ MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_z,           incigaps,         {.i = +1 } },
-	{ MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_x,           incigaps,         {.i = -1 } },
 	{ MODKEY,                    XKB_KEY_g,           togglegaps,       {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_G,           defaultgaps,      {0} },
     { MODKEY,                    XKB_KEY_w,           spawn,            {.v = browser } },
     { MODKEY,                    XKB_KEY_e,           spawn,            {.v = email } },
     { MODKEY,                    XKB_KEY_f,           spawn,            {.v = fileManager } },
@@ -227,13 +219,13 @@ static const Key keys[] = {
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_b,           spawn,            SHCMD("rofibookmarks add") },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_U,           spawn,            SHCMD("rofiunicode") },
     { 0,                         XKB_KEY_Print,       spawn,            SHCMD("screenshot") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,           spawn,            SHCMD("mpc toggle") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_p,           spawn,            SHCMD("mpc toggle && pkill -RTMIN+3 someblocks") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_n,           spawn,            SHCMD("~/dotfiles/.config/rmpc/rmpc-notifier") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,      spawn,            SHCMD("mpc next") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,       spawn,            SHCMD("mpc prev") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_period,      spawn,            SHCMD("mpc next && pkill -RTMIN+3 someblocks") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_comma,       spawn,            SHCMD("mpc prev && pkill -RTMIN+3 someblocks") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_equal,       spawn,            SHCMD("mpc volume +5") },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_minus,       spawn,            SHCMD("mpc volume -5") },
-    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,           spawn,            SHCMD("mpc pause && mpc seek 0") },
+    { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_s,           spawn,            SHCMD("mpc pause && mpc seek 0 && pkill -RTMIN+3 someblocks") },
     { 0,                         XKB_KEY_XF86AudioMute,                 spawn,   SHCMD("wpctl  set-mute   @DEFAULT_AUDIO_SINK@ toggle && pkill -RTMIN+9 someblocks") },
     { 0,                         XKB_KEY_XF86AudioLowerVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%- && pkill -RTMIN+9 someblocks"   ) },
     { 0,                         XKB_KEY_XF86AudioRaiseVolume,          spawn,   SHCMD("wpctl  set-volume @DEFAULT_AUDIO_SINK@ 5%+ && pkill -RTMIN+9 someblocks"   ) },
