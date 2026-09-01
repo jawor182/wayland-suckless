@@ -59,6 +59,7 @@ static const Rule rules[] = {
     { "python3",                     NULL,              0,            1,            0,          0,         -1,       0    },
     { NULL,                          "spterm",          0,            1,            1,          1,         -1,      't'   },
     { NULL,                          "spmusic",         0,            1,            0,          1,         -1,      'm'   },
+    { NULL,                          "spnotes",         0,            1,            0,          1,         -1,      'n'   },
     { NULL,                          "spcal",           0,            1,            0,          1,         -1,      'c'   },
     { NULL,                          "spcalc",          0,            1,            0,          1,         -1,      'C'   },
 
@@ -158,7 +159,6 @@ static const char *browser[]         = { BROWSER, NULL };
 static const char *email[]           = { TERMINAL, "-T", "email", "-e", "neomutt", NULL };
 static const char *fileManager[]     = { TERMINAL, "-T", "files", "-e", "lf", NULL };
 static const char *news[]            = { TERMINAL, "-T", "news", "-e", "newsraft", NULL };
-static const char *notes[]           = { "obsidian", NULL };
 static const char *guiFileManager[]  = { "pcmanfm-qt", NULL };
 static const char *passwords[]       = { "keepassxc", NULL };
 static const char *lockscreen[]      = { "waylock", "-fail-color", "0xfb4934", "-init-color", "0x282828", "-input-color", "0xd65d0e", "-ignore-empty-password", "-fork-on-lock", NULL };
@@ -169,6 +169,7 @@ static const char *spterm[]     = { "t", TERMINAL, "-T", "spterm", NULL};
 static const char *spmusic[]    = { "m", TERMINAL, "-T", "spmusic","-e","rmpc", NULL};
 static const char *spcal[]      = { "c", TERMINAL, "-T", "spcal","-e","calcurse", NULL};
 static const char *spcalc[]     = { "C", TERMINAL, "-T", "spcalc","-e","qalc", NULL};
+static const char *spnotes[]    = { "n", TERMINAL, "-T", "spnotes", "sh", "-c", "cd $HOME/dox/notes && $EDITOR", NULL};
 
 #define ADDPASSRULE(S, K) {.appid = S, .len = LENGTH(S), .key = K}
 static const PassKeypressRule pass_rules[] = {
@@ -186,6 +187,8 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_m,           togglescratch,    {.v = spmusic } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,           togglescratch,    {.v = spcal } },
 	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_q,           togglescratch,    {.v = spcalc } },
+	{ MODKEY,                    XKB_KEY_n,           togglescratch,    {.v = spnotes } },
+	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_c,           togglescratch,    {.v = spcal } },
 	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
 	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_J,           relativeswap,     {.i = +1} },
@@ -203,7 +206,6 @@ static const Key keys[] = {
     { MODKEY,                    XKB_KEY_f,           spawn,            {.v = fileManager } },
     { MODKEY|WLR_MODIFIER_ALT,   XKB_KEY_f,           spawn,            {.v = guiFileManager } },
     { MODKEY,                    XKB_KEY_p,           spawn,            {.v = passwords } },
-    { MODKEY,                    XKB_KEY_n,           spawn,            {.v = notes } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_N,           spawn,            {.v = news } },
     { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_C,           spawn,            {.v = communicator } },
     { MODKEY,                    XKB_KEY_Escape,      spawn,            {.v = lockscreen } },
