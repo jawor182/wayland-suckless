@@ -4,10 +4,8 @@ static const Block blocks[] = {
     { "",         "sb-date",     30,    10 },
     { "",         "sb-idle",      0,    7  },
     { "",         "sb-volume",   10,    9  },
-    { "",         "sb-weather",3600,    6  },
     { "",         "sb-battery",  30,    11 },
     { "",         "sb-internet",  1,    8  },
-
 };
 
 
